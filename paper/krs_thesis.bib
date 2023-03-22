@@ -79,6 +79,26 @@ isbn="978-3-642-24100-0"
    pages={131–146}
 }
 
+@article{liskov_substitution,
+author = {Liskov, Barbara H. and Wing, Jeannette M.},
+title = {A Behavioral Notion of Subtyping},
+year = {1994},
+issue_date = {Nov. 1994},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {16},
+number = {6},
+issn = {0164-0925},
+url = {https://doi.org/10.1145/197320.197383},
+doi = {10.1145/197320.197383},
+abstract = {The use of hierarchy is an important component of object-oriented design. Hierarchy allows the use of type families, in which higher level supertypes capture the behavior that all of their subtypes have in common. For this methodology to be effective, it is necessary to have a clear understanding of how subtypes and supertypes are related. This paper takes the position that the relationship should ensure that any property proved about supertype objects also holds for its subtype objects. It presents two ways of defining the subtype relation, each of which meets this criterion, and each of which is easy for programmers to use. The subtype relation is based on the specifications of the sub- and supertypes; the paper presents a way of specifying types that makes it convenient to define the subtype relation. The paper also discusses the ramifications of this notion of subtyping on the design of type families.},
+journal = {ACM Trans. Program. Lang. Syst.},
+month = {nov},
+pages = {1811–1841},
+numpages = {31},
+keywords = {subtyping, Larch, formal specifications}
+}
+
 @inproceedings{Konnov,
 author = {Konnov, Igor and Veith, Helmut and Widder, Josef},
 year = {2012},
@@ -96,22 +116,35 @@ title = {Bitcoin: A Peer-to-Peer Electronic Cash System},
 journal = {Cryptography Mailing list at https://metzdowd.com}
 }
 
-@article{bateman_myCHIPs, url={http://gotchoices.org/mychips/intro.html}, journal={MyCHIPs Digital Money at \url{http://gotchoices.org/mychips/intro.html} },
+@article{bateman_myCHIPs,
+url={http://gotchoices.org/mychips/intro.html},
+title={MyCHIPs Digital Money},
+journal={MyCHIPs Digital Money at \url{http://gotchoices.org/mychips/intro.html} },
  author={Bateman, Kyle},
  year={2020},
  } 
  
-@article{bateman_state_machines, title="url={https://github.com/gotchoices/MyCHIPs/blob/master/doc/Protocol.md}, journal={MyCHIPs Digital Money at \url{https://github.com/gotchoices/MyCHIPs/blob/master/doc/Protocol.md} },
- author={Bateman, Kyle},
- year={2020},
+@article{bateman_chip_value,
+    url={https://chipcentral.net/wp-content/uploads/2023/01/chips\_note-1.pdf},
+    title={Estimating the value of a CHIP}, journal={Estimating the value of a CHIP},
+    author={Bateman, Kyle},
+    year={2020},
+ } 
+ 
+@article{bateman_state_machines, 
+    url={https://github.com/gotchoices/MyCHIPs/blob/master/doc/learn-protocol.md},
+    title={MyCHIPs Protocol Description 1.3},
+    journal={MyCHIPs Protocol Description 1.3},
+    author={Bateman, Kyle},
+    year={2020}
  } 
  
 @book{dill_trace_theory,
-  title={Trace theory for automatic hierarchical verification of speed-independent circuits},
-  author={Dill, David L},
-  volume={24},
-  year={1989},
-  publisher={MIT press Cambridge, MA}
+      title={Trace theory for automatic hierarchical verification of speed-independent circuits},
+      author={Dill, David L},
+      volume={24},
+      year={1989},
+      publisher={MIT press Cambridge, MA}
 }
 
 @INPROCEEDINGS{ben_DC,  author={Ogles, Benjamin and Aldous, Peter and Mercer, Eric},  booktitle={2019 Formal Methods in Computer Aided Design (FMCAD)},   title={Proving Data Race Freedom in Task Parallel Programs Using a Weaker Partial Order},   year={2019},  volume={},  number={},  pages={55-63},  doi={10.23919/FMCAD.2019.8894270}}
