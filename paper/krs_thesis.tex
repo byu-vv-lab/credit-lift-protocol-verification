@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{bibnames}
 \usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{dsfont}
@@ -35,6 +36,10 @@
 \newcommand{\good}{\emph{GOOD}}
 \newcommand{\always}{\emph{always}}
 \newcommand{\eventually}{\emph{eventually}}
+\newcommand{\send}{\emph{Send}}
+\newcommand{\receive}{\emph{Receive}}
+\newcommand{\sendref}{\emph{SendRef}}
+\newcommand{\receiveref}{\emph{ReceiveRef}}
 \newcommand{\fair}{$F$}
 \newcommand{\action}{\mathds{A}}
 \newcommand{\listaction}{[\action]}
@@ -43,6 +48,10 @@
 \newcommand{\happensbefore}{\prec_A}
 \newcommand{\actsvalid}[2]{\mathds{V}(#1, #2)}
 \newcommand{\projectsize}[2]{\mathds{P}(#1, #2)}
+\newcommand{\basesystem}{\emph{base\_system}}
+\newcommand{\inputset}[1]{\mathds{I}(#1)}
+\newcommand{\outputset}[2]{\mathds{O}(#1, #2)}
+\newcommand{\tracestruc}[1]{\mathds{T}(#1)}
 
 \newcommand{\hra}[2]{\emph{has\_required\_actions}(#1, #2)}
 \newcommand{\hndr}[1]{\emph{has\_no\_duplicate\_receives}(#1)}
@@ -53,7 +62,7 @@
 \newcommand{\psc}[1]{\emph{phase\_sequence\_correct}(#1)}
 \newcommand{\allrrc}[1]{\emph{all\_ref\_receives\_causal}(#1)}
 
-\newcommand{\coderepository}{\emph{GotChoices} github repository \cite{bateman_myCHIPs}}
+\newcommand{\coderepository}{Github repository at \url{https://github.com/byu-vv-lab/credit-lift-protocol-verification}}
 
 \newif\ifcomments
 \commentstrue
@@ -123,7 +132,7 @@ When the set of inputs and outputs remains unchanged we say that the larger syst
 
 This process is demonstrated in a case study of MyCHIPs. MyCHIPs employs a distributed protocol as a means of facilitating the trade of goods and services between trusting partners. There are many temporal properties that must hold for MyCHIPs to meet its security and functionality requirements. This work verifies several of those properties.
 
-In particular, this work verifies a distributed algorithm in the MyCHIPs system called a \emph{credit lift}. A \emph{credit lift} (\emph{lift} for brevity) in the MyCHIPs protocol operates on a group of agents arranged in a cycle such that each agent is in debt to its sucessor in the cycle. The protocol aranges for each to forgive their predecessor's debt, and in exchange, their own debt is forgiven. This protocol is critical for the MyCHIPs system to work correctly as a digital currency. Details of how this protocol fits in the larger system can be found in the appendix \ref{apdx:mychips}.
+In particular, this work verifies a distributed algorithm in the MyCHIPs system called a \emph{credit lift}. A \emph{credit lift} (\emph{lift} for brevity) in the MyCHIPs protocol operates on a group of agents arranged in a cycle such that each agent is in debt to its successor in the cycle. The protocol arranges for each to forgive their predecessor's debt, and in exchange, their own debt is forgiven. This protocol is critical for the MyCHIPs system to work correctly as a digital currency. Details of how this protocol fits in the larger system can be found in the appendix \ref{apdx:mychips}.
 
 The debt clearing is done in two stages. First, each entity \emph{promises} to send CHIPs to their predecessor. Then, once all have promised, each entity \emph{commits} and sends CHIPs as promised. Once all have sent CHIPs, each entity's \emph{balance}--the difference between the number of sent CHIPs and the number of received CHIPs--remains the same, but they have cleared their liabilities. 
 
@@ -187,11 +196,90 @@ Fig. \ref{fig:liftStates} describes the behavior expected from each of these equ
 These mealy machines are based on the state machines Bateman provides to define the protocol. \cite{bateman_state_machines} 
 In the figure, each box represents the state of the lift from the perspective of the node, and each arrow represents a change in state and an associated action that is taken during the transition from one state to the next. Each transition is labeled with a condition that must be true for the transition to be taken, separated by a $/$ from an action that is taken during the transition. Each node has stored: the network ID of its predecessor (Pred), its successor (Succ), and the Referee. A transition can be made conditional on receiving a particular message from a particular network ID. This case is written in the form \emph{sender} $?$ \emph{message\_type}. As an action during a transition, nodes may transmit a particular message to a particular network ID. This case is written in the form \emph{recipient} $!$ \emph{message\_type}. 
 
-The Spin model used as the model checking system is based on the mealy machine in Fig. \ref{fig:liftStates}. The details of that implementation are described in Section \ref{chap:model_checking_results}. The set of rules for the proof in Coq are defined based on the mealy machine in Fig. \ref{fig:liftStates} and the sequence diagram in \ref{fig:liftSequence}. Details of that implementation are described in Section \ref{chap:coq_results}.
+The Spin model used as the model checking system is based on the mealy machine in Fig. \ref{fig:liftStates}. The details of that implementation are described in Section \ref{chap:model_checking_results}. The set of rules for the proof in Coq are defined based on the mealy machine in Fig. \ref{fig:liftStates} and the sequence diagram in 
+ Fig. \ref{fig:liftSequence}. Details of that implementation are described in Section \ref{chap:coq_results}.
+ 
+\section{Extending model-checking results using an inductive proof}
+\label{sec:extending}
 
+\egm{Great first draft. State the result as a theorem in a theorem environment. State each condition as either lemmas or theorems. and not a condition. These are admitted without any explanation beyond what they mean. Also, state condition 2 in terms of conformance. Be sure to define the base system very clearly. Push detailed items relative to conformance to the Coq model section since it needs a strong tie to conformance. Here just define it's meaning intuitively. So this sections should state the theorems/lemmas, and then manually prove that top-level theorem. I would expect an actual manual proof ending with QED. It should not be too hard since you have the lemmas/theorems that you need already admitted. For conditions (2) relative to the blackbox verification, make it its own section with the best argument you can and push the rest to future work.}
+
+\egm{The subsequent sections, one for each lemma/theorem to support the top level proof need new opening paragraphs. These new openings reframe the text in the context of the stated lemma used in the top-level proof. For example, the model checking section is now defined around the base system and cites proof by exhaustive search as the proof mechanism of the theorem/lemma. That leads to a brief explanation of SPIN/LTL, and then you can transition to the existing text. The same would happen for the other sections. Doest that make sense?}
+\krs{I think it makes sense, I've got this all done. I'm thinking it may make sense to restate each lemma in their relevant section and prove they are true in a proof environment. I would use some informal methods like "By exhaustive search." But before I put the lipstick on I'd like to be sure its not a pig. Is it a pig? Does the logic check out for those sections? Does the Theorem 1 logic check out?}
+
+To prove that certain properties hold for an arbitrarily large system, we can use trace theory as described by Dill. Trace theory considers when it is safe to substitute one module for another. Dill defines conformance: a reflexive and transitive relation with the property that if $T' \preceq T$ then the module that produces the trace structure $T'$ can be safely substituted for the module that produces the trace structure $T$ \cite{dill_trace_theory}.
+
+We can use the conformance relation to prove that a set of properties hold on an arbitrarily large system. To do so we utilize the following four lemmas. 
+
+\begin{lemma}[The properties hold on the base system]
+\label{lemma:base_system}
+The properties hold for each node in a base system consisting of 1 originator, 2 relay nodes, and 1 referee.
+$$\forall N, N \in \basesystem \longrightarrow P(\tracestruc{N})$$
+Where $N$ is a node as implemented in the model-checker. And $P(\tracestruc{N})$ is a predicate over the state of N based on a set of traces that N observes.
+\end{lemma}
+\begin{lemma}[n nodes conform to 1 node]
+\label{lemma:chain_conform}
+A chain of n relay nodes conforms to a single relay node for nodes as implemented in the inductive proof.
+$$\forall n \in \mathds{N}, \tracestruc{[N_0, N_1, ... N_n]} \preceq \tracestruc{N_0}
+$$
+Where $\tracestruc{N_0}$ denotes the trace structure generated by the node $N_0$ and $\preceq$ denotes the conformation relation described by Dill.
+\end{lemma}
+
+\begin{lemma}[proof nodes conform to model-checker nodes]
+\label{lemma:ind_cof_model}
+A node as implemented in the inductive proof conforms to a node as implemented in the model-checker.
+$$\tracestruc{N_i} \preceq \tracestruc{N_m}$$
+Where $N_i$ denotes a node as implemented in the inductive proof and $N_m$ denotes a node as implemented in the model-checker.
+\end{lemma}
+\egm{I'm not sure I understand what this condition means (the text in the following paragraphs didn't help entirely either).}
+\krs{This is the brain blast. We can use conformance both to show a large system works the same as a small system as well as to make sure the system defined in the inductive proof works the same as the system defined in the model checker}
+
+\begin{lemma}[All nodes in a large system are equivilant to some node in the base system]
+\label{lemma:all_nodes_covered}
+For any system of arbitrary size, we can construct the system such that the trace structure of any arbitrarily selected node is equivalent to a node in the base system.
+$$
+\forall N \in S, \exists N' \in \basesystem, \tracestruc{N'} = \tracestruc{N}.
+$$
+Where $S$ is a system of arbitrary size that was constructed by replacing nodes from the $\basesystem$. 
+\end{lemma}
+
+
+\begin{theorem}[The properties hold on an arbitrarily large system]
+The desired properties hold for an arbitrarily large number of nodes utilizing the MyCHIPs protocol.
+\begin{proof}\
+\\
+Consider the base system consisting of 1 originator, 2 relay nodes, and a referee, as implemented in the model checker. \\
+Replace the first relay node in the base system ($N_1) $ with a relay node as defined in the inductive proof ($N_i$). \\
+By Lemma \ref{lemma:ind_cof_model}, we know $N_i \preceq N_1$. \\
+By trace theory, we know that the behavior of all other nodes is unchanged. \\
+Now replace $N_i$ with a chain of nodes of arbitrary length. \\
+By Lemma \ref{lemma:chain_conform}, and trace theory we know we know that the behavior of all other nodes is unchanged. \\
+The constructed system is of arbitrary size. \\
+By Lemma \ref{lemma:all_nodes_covered} we know the trace structure of any particular node can be mapped to some node in the $\basesystem$.  \\
+Because of this mapping, by Lemma \ref{lemma:base_system}, we now know that the properties hold for any arbitrary node in the constructed system. \\
+$$\tracestruc{N} = \tracestruc{N'} \wedge P(\tracestruc{N'}) \longrightarrow P(\tracestruc{N})$$
+$\therefore$ The desired properties hold for an arbitrarily large number of nodes utilizing the MyCHIPs protocol.
+\qed
+\end{proof}
+\end{theorem}
+
+The intuition behind this method can be described by considering a black box that is inserted into the cycle. This is visualized in Fig. \ref{fig:coqExtension}. In the black box, there could be a single node or there could be a chain of N nodes. If we can show that the black box \emph{conforms} to a single node---i.e. the rest of the system cannot tell how many nodes are in the black box---we know that inserting the black box will not affect the behavior of the rest of the system. This means that the properties hold for any node that was not replaced by a black box. By carefully selecting which nodes we replace with black boxes we can construct a system such that any arbitrary node remains unchanged. This allows us to prove that the properties hold for all nodes in an arbitrarily large system. 
+
+\egm{Shouldn't it be subseteq and superseteq? Strict subset/superset is stronger than what is needed. Right? Also, there needs to be a better transition to the next paragraph. It's not clear how it connects to the current paragraph.}
+\krs{Yep you are right. But all that got moved into later sections now}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.35]{paper/CoqExtensionMethod.png}
+    \caption{Method for extending model checking result}
+    \label{fig:coqExtension}
+\end{figure}
+
+\subsubsection{Organization}
+The remainder of this paper is organized as follows: Section \ref{chap:model_checking_results} describes how the first lemma was verified using model checking. Section \ref{chap:coq_results} describes how the second lemma is verified using an inductive proof generated in an interactive theorem prover. Section \ref{sec:inputs_map} argues that the third lemma holds for the model checking and inductive proof implementations. Finally, Section \ref{sec:nodes_map_base} proves the fourth lemma.
 
 \section{Model Checking} \label{chap:model_checking_results}
-The safety and liveness properties required for the MyCHIPs lift protocol can be proven by an exhaustive search all possible states in a small system. Spin is a powerful model-checking tool that allows for these types of properties to be expressed and verified. The state required by the system can be split into two classes: the part of the state that is evaluated when checking the properties, and the state that is used only to determine which state transition to take. We provide a formal definition of the former, and describe the latter intuitively. The source code for the complete spin model can be found on the \coderepository.
+We would like to prove that the properties hold on a base system consisting of 1 originator, 2 relay nodes, and a referee. The safety and liveness properties required for the MyCHIPs lift protocol can be proven by an exhaustive search all possible states in a small system. Spin is a powerful model-checking tool that allows for these types of properties to be expressed and verified. The state required by the system can be split into two classes: the part of the state that is evaluated when checking the properties, and the state that is used only to determine which state transition to take. We provide a formal definition of the former and a description of the latter. The source code for the complete spin model can be found on the \coderepository.
 \subsection{Definition of the system state}\label{sec:statedef}
 The system state is a combination of the individual states for each node. The state for the originator and each relay node can be represented as:
 $$Node~state \equiv \langle S, B^s, B^p \rangle$$
@@ -212,18 +300,17 @@ $$System~state \equiv \langle S_O, S_1, S_2, S_R, B^s_O, B^p_O, B^s_1, B^p_1, B^
 With the $O$ subscript representing the \emph{originator}, $1$ and $2$ representing the first and second \emph{relay} nodes, and $R$ representing the \emph{referee}.
 
 \subsection{Definition of the properties}
-The desired properties are defined in terms of the simplified state presented in section \ref{sec:statedef}: 
-The properties verified in the Spin include a fairness property, and each of the properties described in section \ref{sec:requiredProperties}. 
+The desired properties are defined in terms of the simplified state presented in section \ref{sec:statedef}. 
+The properties verified in the Spin model include a fairness property, and each of the properties described in section \ref{sec:requiredProperties}. 
 
-\subsection{Linear-time temporal logic}
+\subsubsection{Linear-time temporal logic}
 Linear-time temporal logic (LTL) allows for liveness properties to be defined. There are two temporal operators defined in LTL that are used to define the properties: \emph{always} and \emph{eventually}
 
 The \emph{always} operator defines a property that holds only if the associated predicate is true for every possible system state.
 
-The \emph{eventually} operator defines a property that holds if for all paths through the system state space there exists a state where the associated predicate is true. If there exists a single path where the predicate is never true the property does not hold. That single path may be a path to a termination state, or it could just be a cycle of states. 
+The \emph{eventually} operator defines a property that holds if for all paths through the system state space there exists a state where the associated predicate is true. If there exists a path where the predicate is never true the property does not hold. That single path may be a path to a termination state, or it could just be a cycle of states. 
 
-The composition \emph{always eventually} is used to make claims about the final state of the system. Using the \emph{eventually} construct alone will accept a trace where a predicate holds for a moment but doesn't hold later in the trace. Using \emph{always eventually} ensures that the conditional holds at all final states of the system (or any loop of non-final states). 
-
+The composition \emph{always eventually} is used to make claims about the final state of the system. Using the \emph{eventually} construct alone will accept a trace where a predicate holds for a moment but doesn't hold later in the trace. Using \emph{always eventually} ensures that the predicate is true at all termination states of the system or any loop of non-termination states. 
 
 \begin{definition}[A fairness property]
 \begin{multline*}
@@ -231,11 +318,11 @@ The composition \emph{always eventually} is used to make claims about the final 
      (\refstate = \good \vee \refstate = \void) \\
 \end{multline*}
 \end{definition}
-A fairness property is required as a consequence for not explicitly modeling time as described in section \ref{sec:model_time}. The referee must decide if a lift should be committed or nullified based on a timeout. When a node requests the status of a lift the referee may return a \good\ or \void\ message or they may send a \pend\ message if the timeout has not been reached yet and the lift is not yet committed. However, because this decision is modeled as a non-deterministic choice, the model considers the possibility that the referee will always send a pend message in an endless loop with one of the nodes. Spin identifies this case and provides it as a counter-example for many of the properties. However, no matter how far into the future the timeout was set, eventually, the timeout will expire. So that counter-example is infeasible and not interesting for us. 
+A fairness property is required as a consequence for not explicitly modeling time as described in section \ref{sec:model_time}. The referee must decide if a lift should be committed or nullified based on a timeout. When a node requests the status of a lift the referee may return a \good\ or \void\ message or they may send a \pend\ message if the timeout has not been reached yet and the lift is not yet committed. However, because this decision is modeled as a non-deterministic choice, the model considers the possibility that the referee will always send a pend message in an endless loop. Spin identifies this case and provides it as a counter-example for many of the properties. However, no matter how far into the future the timeout was set, eventually, the timeout will expire. So that counter-example is infeasible.
 
-To tell Spin this is a case we are not interested in we define a fairness property that says that eventually the Referee is either in the \good or the \void state. However, when introducing a fairness constraint it is important to verify that that constraint can be met. If that constraint can not be met the properties will be \emph{vaccuously true}. Because of this, we need to add a new property to verify that the constraint is met in at least 1 case---and likely almost all cases. This would normally take the form of an existential property. Unfortunately, Spin does not perform well to prove existentials so instead we create a property that says that it is never true that the fairness property is met. We expect this property to fail. If it does it means that there are cases where the fairness property holds.
+To tell Spin this is a case we are not interested in we define a fairness property that says that eventually the Referee is either in the \good\ or the \void\ state. However, when introducing a fairness constraint it is important to verify that that constraint can be met. If that constraint can not be met the properties will be \emph{vaccuously true}. Because of this, we need to add a new property to verify that the constraint is met in at least 1 case---and likely almost all cases. This would normally take the form of an existential property. Unfortunately, Spin does not perform well to prove existentials so instead we create a property that says that it is never true that the fairness property is met. We expect this property to fail. If it does it means that there are cases where the fairness property holds.
 
-Then we write all our properties such that we claim only that if our fairness property holds does our desired property hold. This effectively trims out that infeasible case and allows Spin to continue and verify the remaining properties. 
+Once the fairness property is defined, we write all our properties in the form $F \longrightarrow property.$ This effectively trims out that infeasible case and allows Spin to continue and verify the remaining properties. 
 
 \begin{definition}[Property 1]
 \begin{multline*}
@@ -246,8 +333,8 @@ Then we write all our properties such that we claim only that if our fairness pr
      (\refstate = \good \vee \refstate = \void) \\
 \end{multline*}
 \end{definition}
-The purpose of $P_1$ is to verify that lifts always eventually are committed or nullified for every active node. Put differently nodes are not left hanging with an incomplete lift forever. 
-When a lift at a node is committed it moves the lift into the \good state. When a lift at a node is nullified it moves the lift into the \void state. If the state is either \good or \void then the lift is in a final state. In the model, there are 4 nodes: the originator, two relay nodes, and the referee. For each of these nodes, we need to check that in all possible scenarios they eventually are all in a final state. Using the always eventually construct we check that the originator, the two relays, and the referee are all in the final state. 
+The purpose of $P_1$ is to verify that nodes are not left with a lift in an incomplete state forever. 
+When a lift at a node is committed it moves the lift into the \good\ state. When a lift at a node is nullified it moves the lift into the \void\ state. If the state is either \good\ or \void\ then the lift is in a final state. In the model, there are 4 nodes: the originator, two relay nodes, and the referee. This property checks that all of these nodes eventually are in a final state. 
 
 \begin{definition}[Property 2]
     
@@ -256,7 +343,7 @@ P_2 \equiv \always\ \eventually,\ \fair \longrightarrow \\
     (\originatorstate = \relayastate = \relaybstate = \refstate) \\
 \end{multline*}
 \end{definition}
-The purpose of $P_2$ is to verify that at the final state of the lift, every active node agrees that the lift was committed or every active node agrees the lift was nullified. We again use the always eventually construct to ensure this property holds at the final state of the system. To check that all nodes are in agreement on the state of the lift we check to ensure that The originator's state is equal to the first relay's state, the first relay's state is equal to the second relay's state, and that the second relay's state is equal to the referee's state. This implies by transitivity that all nodes have the same final state. If this Boolean expression is true at the final state then all nodes are in agreement on the final state of the lift.
+The purpose of $P_2$ is to verify that the nodes reach a consensus on the final state of the lift. To check that all nodes are in agreement on the state of the lift we check that the originator's state is equal to the first relay's state, the first relay's state is equal to the second relay's state, and that the second relay's state is equal to the referee's state. This implies by transitivity that all nodes have the same final state. 
 
 \begin{definition}[Property 3]
 \begin{multline*}
@@ -267,9 +354,7 @@ P_3 \equiv \always\ \eventually,\ \fair \longrightarrow \\
 \end{multline*}
 \end{definition}
 
-The purpose of $P_3$ is to verify that the balance of every active node on the final state of the lift is equal to or greater than its initial balance. Because the starting balance is not needed to implement the model we record the change in a node's balance with its partners rather than its total balance. The model tracks the change in the balance of a node with its successor in \emph{balanceSuccDelta}, and its predecessor in \emph{balancePredDelta}. In a successful lift, we expect the sum of these balances to be zero. However, if a node fails and stops transmitting, its successor might obtain the signature from the referee. When it does so it can use it to collect chips from its successor without needing to send chips to its predecessor. This is an allowable result so we allow the sum of the change in balances to be greater than zero to allow for this case.
-
-In $P_3$ we verify that each node's balance is equal to or greater than its starting balance. Again we make use of the always eventually construct to ensure that this condition holds at the final state of the system.
+The purpose of $P_3$ is to verify that the balance of every active node on the final state of the lift is equal to or greater than its initial balance. We record the change in a node's balance with its partners rather than its total balance. In a successful lift, we expect $B^s + B^p = 0$. However, if a node fails and stops transmitting, its successor might obtain the signature from the referee. When it does so it can use it to collect chips from its successor without needing to send chips to its predecessor. This is an allowable result so we allow $B^s + B^p \ge 0$.
 
 \begin{definition}[Property 4]
 \begin{multline*}
@@ -281,7 +366,7 @@ P_4 \equiv \always\ \eventually,\ \fair \longrightarrow \\
 \end{definition}
 
 
-$P_4$ ensures that always eventually every pair of nodes agrees on the change in the balance between them. 
+The purpose of $P_4$ is to ensure that nodes are always in agreement with their partners on the change in the balance between them. 
 
 
 
@@ -295,10 +380,10 @@ To implement the protocol as described by the mealy machine above we need to imp
 The message passing between nodes is modeled by creating 3 message channels for each node. One for messages received from the node's successor in the cycle, one for messages from the predecessor and one for messages from the referee. The referee also has a channel where it receives messages.
 
 \subsubsection{Message Types}
-The details of the message are not important for the model, instead, each message will have a specific type. It is expected that nodes in a real system will verify that messages are valid as part of processing a received message. For the model, we will consider invalid messages as if they were never received. Once a valid message is received, the type of that message will inform the actions a node will take in response to the message. Examining the state machines we can see that knowing the messages type is sufficient for our model. 
+The details of the message are not important for the model, instead, each message will have a specific type. It is expected that nodes in a real system will verify that messages are valid as part of processing a received message. For the model, we will consider invalid messages as if they were never received. Once a valid message is received, the type of that message will inform the actions a node will take in response to the message.
 
 \subsubsection{Message Loss}
-Rather than using the channels directly, the state machines for each node use helper functions to send messages. These helper functions to determine which node the message should be sent to and puts the message in the appropriate channel. These helper functions also model the possibility that a message might be lost in transit. Whenever a message is sent, Spin models it as a non-deterministic choice on whether the message should be placed in the appropriate message queue or dropped. In its model checking, Spin will evaluate all combinations of lost messages. One unique case is the possibility that all messages from a given node are dropped. This models the case where a node crashed or otherwise lost connection to the network. 
+Rather than using the channels directly, the state machines for each node use helper functions to send messages. There are 3 functions: \emph{sendToPred} which sends a message to the predecessor in the cycle, \emph{sendToSucc} which sends to the successor, and \emph{sendToReferee} which sends to the referee. These helper functions determine which node the message should be sent to and puts the message in the appropriate channel. These helper functions also model the possibility that a message might be lost in transit. Whenever a message is sent, Spin models it as a non-deterministic choice on whether the message should be placed in the appropriate message queue or dropped. In its model checking, Spin will evaluate all combinations of lost messages. One unique case is the possibility that all messages from a given node are dropped. This models the case where a node crashed or otherwise lost connection to the network. 
 
 The protocol requires that the referee should be a node that is consistently available so messages to and from the referee are never dropped. This is required to prove some of the required liveness properties. Without this requirement, the problem is isomorphic with the \emph{two generals problem}, and it is impossible to guarantee eventual consensus on the lift status. This requirement enforces that eventually every message sent to and from the referee will be received, however, the model will evaluate the possibilities that arise should those messages take a very long time. 
 
@@ -311,27 +396,58 @@ Because we don't expect nodes to have synchronized clocks, modeling time for eac
 To verify each of these properties, Spin evaluated 
 577244 unique states with 240285 edges between those states. Evaluating each property spin found that there were no counter-examples that both satisfied the fairness property and violated one of the properties. We also verified that the fairness property is satisfied in some (presumably all but very few) cases. 
 
-From these results, we can conclude that the properties hold for a system with one originator, two relay nodes, and one referee, for all possible orderings and types of messages sent and for all combinations of messages failing to be delivered.
+From these results, we can conclude that the properties hold for a system with one originator, two relay nodes, and one referee, for all possible orderings and types of messages sent and for all combinations of messages failing to be delivered. This verifies Lemma \ref{lemma:base_system} as described in Section \ref{sec:extending}.
 
 \section{Inductive Proof} \label{chap:coq_results}
+We would like to prove that a chain of n relay nodes conforms to a single relay node for nodes as implemented in the inductive proof.
+$$\forall n \in \mathds{N}, \tracestruc{[N_0, N_1, ... N_n]} \preceq \tracestruc{N_0}
+$$
+Where $\tracestruc{N_0}$ denotes the trace structure generated by the node $N_0$ and $\preceq$ denotes the conformation relation described by Dill.
 
-Coq is a popular interactive theorem prover that can be used to define and prove properties. Inductive reasoning techniques can be used in Coq to state and prove properties of arbitrarily large systems. This work implements a proof that shows that all possible traces that satisfy the validity rules for a system of arbitrary size $n$ can be \emph{projected} to a base system of size $3$ without changing the inputs or outputs of the remaining nodes. Because the inputs and outputs are unchanged we can say that the larger system conforms to the smaller system. This implies that the behavior is unchanged and thus the desired properties proven by the model checking as described in Section \ref{chap:model_checking_results} continue to hold for an arbitrarily large system.
+A trace structure of some implementation $T_I$ conforms to some specification $T_S$ if $T_I$ can be safely substituted for $T_S$. More precisely, $T_I \preceq T_S$, if $T_I$ can accept every input that $T_S$ can, and every output of $T_I$ is a possible output of $T_S$ \cite{uofu_conformance}.
+
+This can be described in terms of the set of accepted inputs and the set of possible outputs for each node in a chain of relay nodes.
+$$\inputset{T_S} \subseteq \inputset{T_I}$$
+$$\wedge$$
+$$ \forall I \in \inputset{T_S}, \outputset{T_S}{I} \supseteq \outputset{T_I}{I} $$
+
+Where $\inputset{T_S}$ denotes the set of inputs that $T_S$ accepts without failure, and $\outputset{T_S}{I}$ denotes the set of outputs that could be generated by $T_S$ with the given input $I$.
+
+This logic is mirrored in the Liskov Substitution principle. If the set of accepted inputs to a replacement module is at superset of, or equal to the set of accepted inputs in the original, and if the set of possible outputs of a module is a subset of, or equal to the set of possible outputs of the original, then it can be safely swapped out \cite{liskov_substitution}. 
+
+In the context of the problem at hand we must show that:
+$$\forall n \in \mathds{N}, 
+\inputset{N_0} \subseteq \inputset{[N_0, N_1, ... N_n]}$$
+$$\wedge$$
+$$ \forall n \in \mathds{N}\ I \in \inputset{N_0}, \outputset{N_0}{I} \supseteq \outputset{[N_0, N_1, ... N_n]}{I} $$
+
+Where $\inputset{N_0}$ denotes the set of inputs accepted by the node $N_0$ and $\outputset{N_0}{I}$ denotes the set of possible outputs for node $N_0$ given it receives the input $I$. 
+
+
+\subsection{Methods}
+Coq is a popular interactive theorem prover that can be used to define and prove properties. Inductive reasoning techniques can be used in Coq to state and prove properties of arbitrarily large systems. 
+
+
+In order to prove Lemma \ref{lemma:chain_conform} we will need to define how a relay node or a chain of relay nodes responds to a particular input and prove properties about the observed inputs and outputs. To do this it is helpful to define the form that inputs take. The simplest approach to define these inputs is to include a basic model the originator and referee sufficient to generate inputs to the relay nodes. 
+Each of the definitions of how relay nodes, the originator, and the referee respond to various actions are encoded in a series of validity rules. These validity rules are a predicate on a trace of actions that occur in a system.
+
+The rest of this section describes the machine-checked proof that shows that all possible traces that satisfy the validity rules for a system of arbitrary size $n$ can be \emph{projected} to a base system of size $3$ without changing the inputs or outputs of the remaining nodes. Because the inputs and outputs of all nodes in a system are invariant on the size of the system, we know that 
+$\inputset{N_0} = \inputset{[N_0, N_1, ... N_n]}$ and that $\forall I \in \inputset{N_0}, \outputset{N_0}{I} = \outputset{[N_0, N_1, ... N_n]}{I}$.
+This implies that
+$\tracestruc{N_i} \preceq \tracestruc{N_m}$.
 The details of the implementation can be 
-found on the \emph{GotChoices} github repository \cite{bateman_myCHIPs}. 
+found in the \coderepository.
 
 \subsection{Definitions} \label{sec:definitions}
-The MyCHIPs system in the Coq proof is written with a \emph{black box} approach. The Coq proof does not need to know anything about the internal state of each of the nodes. To prove that a larger system conforms to a smaller system we need only show that the set of possible inputs and outputs of each node are equivalent regardless of the size of the system. Because of this many of the variables in the Spin model, including the current balance, and each nodes lift state are omited from the Coq definitions. 
-\krs{We also omit some interactions between the originator and the referee. But the goal of including the originator at all is to provide context for the relay nodes. I need to adjust some language here to better reflect that.}
+The MyCHIPs system in the Coq proof is written with a \emph{black box} approach. The Coq proof does not need to know anything about the internal state of each of the nodes. To prove that a larger system conforms to a smaller system we need only show that the set of possible inputs and outputs of each node are equivalent regardless of the size of the system. Because of this, many of the variables in the Spin model, including the current balance, and each nodes lift state are omited from the Coq definitions. 
 
-Rather than considering each individual node in the system, the Coq proof operates on traces of actions that might occur in the system. Each trace is represented with an ordered list of \emph{Actions}. The list represents the actions that each node took in the system in the order that they took them.
+Rather than considering each individual node in the system, the Coq proof operates on traces of actions that might occur in the system. Each trace is represented by an ordered list of \emph{Actions}. The list represents the actions that each node took in the system in the order that they took them.
 
 We define rules that must hold for a trace of actions to be considered valid. We define these rules such that all possible traces of actions in the system are considered valid, and all impossible traces are considered invalid. These rules include properties that are enforced by the MyCHIPs protocol as well as properties that are intrinsic to any distributed system. For example, we enforce  messages can only be received after the message has been sent.
 
-We define four distinct kinds of actions: \emph{Send}, \emph{Receive}, \emph{SendRef}, and \emph{ReceiveRef}.
-There are also two explicit types of messages, \promise and \commit, as well as one implicit message type which is the status request messages exchanged with the referee.
-If a node requests the status from the referee but that referee responds with a \emph{PEND} response, those actions do not affect node state so are omitted from the proofs action trace.
+If a node requests the status from the referee but that referee responds with a \pend\ response, those actions do not affect node state so are omitted from the proof's action trace.
 
-Each node in the cycle has a unique ID represented by an integer. The Originator's ID is 0, with all other nodes in the system having some ID greater then 0. The referee does not have an ID but instead, the special SendRef and ReceiveRef actions are used for actions that communicate with the referee. 
+Each node in the cycle has a unique ID represented by a non-negative integer. The Originator's ID is 0, with all other nodes in the system having some ID greater than 0. The referee does not have an ID but instead, the special SendRef and ReceiveRef actions are used for communication with the referee. 
 
 \subsubsection{Validity Rules} \label{sec:validity_rules}
 The rules that determine if a trace of actions is valid are defined in \emph{acts\_valid}. There are 8 rules:
@@ -348,12 +464,17 @@ The rules that determine if a trace of actions is valid are defined in \emph{act
   \item \emph{all\_ref\_receives\_causal}
 \end{enumerate}
 
-All must hold for a trace of actions to be considered valid. The rules were designed to exactly match the possible traces that could be generated by a system of nodes for the given size. Each of these rules are defined formally below and described in detail in Appendix \ref{apdx:coq_detail}.
+All must hold for a trace of actions to be considered valid. The rules were designed to match the possible traces that could be generated by a system of nodes for the given size. All of these rules are defined formally below and described in detail in Appendix \ref{apdx:coq_detail}.
 
 For the following definitions, we define an action type 
-$$\action \in \{(Send, s, d, m), (Receive, d, m), (SendRef, s) (ReceiveRef, d)\}$$
-with source identifier $s \in \mathds{Z}$, destination identifier $d \in \mathds{Z}$, and a message $m \in \{Promise, Commit\}$. We also define a trace of actions 
-$A \in (a_1, a_2, ... a_n), a_i \in \action,$ as well as a size $S \in \mathds{N}, S = n.$
+\begin{definition}[Action Type]
+$$\action \equiv \{(Send, s, d, m), (Receive, d, m), (SendRef, s) (ReceiveRef, d)\}$$
+
+Where $s \in \mathds{N}$ is the source identifier $0 \le s < size$, $d \in \mathds{Z}$ is the destination identifier $-1 \le d \le size$, and $m$ is a message $m \in \{\promise, \commit\}$.
+
+\end{definition}
+For the following definitions we use the notation: 
+$A \equiv (a_1, a_2, ..., a_n), a_i \in \action,$ as well as a denote the size of the system $S \in \mathds{N}$ which is a count of the number of nodes in the system.
 
 \begin{definition}[has\_required\_actions] The trace contains the required Sends and Receives with Promise Messages, and nodes before a given failure point $m$ have the required Sends and Receives with Commit messages, or if they are after a given failure point they request the lift status from the referee.
 
@@ -382,20 +503,21 @@ $$
 
 \begin{definition}[has\_no\_duplicate\_receives]
 The trace contains at most one of each receive action. 
-$Given\ r = (Receive, d, m), n \in \mathds{N}, m \in \emph{Message},\ \sum_{A}[x=r] \le 1$. Which counts the number of occurrences where $x=r$ in $A$. 
+$Given\ r = (Receive, d, m), n \in \mathds{N}, m \in \emph{Message},\ \sloppy{\sum_{A}[x=r]} \le 1$. Which counts the number of occurrences where $x=r$ in $A$. 
 \end{definition}
 
 \begin{definition}[all\_receives\_causal]
-Every Receive action is preceded by a Send action where a message of that type is sent to the destination. Given $r = (Receive, d, m), r \in A \longrightarrow \exists a = (Send, s, d^*, m), a \in A \wedge d^* = d \mod S \wedge a \happensbefore r.$ Where $\happensbefore$ is the happens-before relation over $A$, indicating that $a$ occurs before $r$ in the trace of events. 
+Every \emph{Receive} action is preceded by a corresponding \emph{Send} action. 
+Given $r = (Receive, d, m), r \in A \longrightarrow \exists a = (Send, s, d^*, m), a \in A \wedge d^* = d \mod S \wedge a \happensbefore r.$ Where $\happensbefore$ is the happens-before relation over $A$, indicating that $a$ occurs before $r$ in the trace of events. 
 \end{definition}
 
-Because we allow the destination of a \emph{Send} to be an integer between $-1$ and the size \emph{inclusive} this means that a node can send to ID $-1$ and this always corresponds with the node with the maximum ID in the system. Also in the original system a node might send a message to the node with ID $n$, but when we project to size $n$ the node with ID $n$ is removed from the system. This send---instead of being sent to a node that doesn't exist---now gets mapped to node $0$ because the destination need only be equal modulo the size. This allows for the projection to work without the need to mutate actions, which makes proving properties about the projected system much simpler.  
+Because we allow the destination of a \emph{Send} to be an integer between $-1$ and the size \emph{inclusive} this means that a node can send a message with a destination $-1$ and this always corresponds with the node with the maximum ID in the system. Additionally, a node might send a message with the destination $n$, but when we project to size $n$ the node with ID $n$ is removed from the system. This send---instead of being sent to a node that doesn't exist---now gets mapped to node $0$ because the destination need only be equal modulo the size. This allows for the projection to work without the need to mutate actions, which makes proving properties about the projected system much simpler.  
 
 \begin{definition}[all\_sends\_triggered] Only the originator sends a message without first receiving a message of the same type.
-Given $a = (Send s, d, m), s \neq 0 \longrightarrow a \in A \longrightarrow \exists r, r = (Receive, s, m) \wedge r \in A \wedge r \happensbefore a$
+Given $a = (Send, s, d, m), a \in A \wedge s \neq 0 \longrightarrow \exists r, r = (Receive, s, m) \wedge r \in A \wedge r \happensbefore a$
 \end{definition}
 
-\begin{definition}[all\_ids\_in\_range] Ensures the trace only includes identifiers for nodes that are in a system of the given size. Destinations of a send are allowed to \emph{wrap} by one identifier. Given $a \in \action, a = (Send, s, d, m) \longrightarrow 0 \le s < \S \wedge -1 \le d \le S$
+\begin{definition}[all\_ids\_in\_range] Ensures the trace only includes identifiers for nodes that are in a system of the given size. Destinations of a send are allowed to \emph{wrap} by one identifier. Given $a \in \action, a = (Send, s, d, m) \longrightarrow 0 \le s < S \wedge -1 \le d \le S$
 \end{definition}
 
 \begin{definition}[promise\_forward\_commit\_backward] All Promise messages are sent to the successor in the cycle and all Receive messages are sent to the predecessor. Given $a = (Send, s, d, m), a \in A \longrightarrow [(m = Promise \longrightarrow d = s + 1) \wedge (m = Commit \longrightarrow s = d + 1)]$
@@ -425,46 +547,58 @@ $$
 
 
 \subsection{Projection}
-Projection is defined with the \emph{projected} function. Given the size of the system we would like to project onto and an action, the \emph{projected} function determines if s given n action is kept or omitted in the projected trace. It uses a special type  
-$option \action \in \{\emph{None}, \emph{Some a}\}$ with $a \in \action$.
+Projection is defined with the \emph{projected} function. Given the size of the system we would like to project onto and an action, the \emph{projected} function determines if a given n action is kept or omitted in the projected trace. It uses a special type  
+$option \action \equiv \{\emph{None}, \emph{Some a}\}$ with $a \in \action$.
 
-\emph{projected} returns $\emph{None}$ if the given action should be omitted and $\emph{Some} a$ with a being the given action if the action should be kept in the projected trace.
+\emph{projected} returns $\emph{None}$ if the given action, $a$,  should be omitted and $\emph{Some}\ a$ if the action should be kept in the projected trace.
 
-The projection function has the following properties:
+\begin{definition}[projected]
 \begin{multline*}
-a = (Send, s, d, m), \longrightarrow \\
+a = (Send, s, d, m) \longrightarrow \\
 s \ge S \longrightarrow \emph{projected}(a, S) = \emph{None} \\
 d > S \longrightarrow \emph{projected}(a, S) = \emph{None} \\
 \end{multline*}
 \begin{multline*}
-a = (Receive, d, m), \longrightarrow \\
+a = (Receive, d, m) \longrightarrow \\
 d \ge S \longrightarrow \emph{projected}(a, S) = \emph{None} \\
 \end{multline*}
 \begin{multline*}
-a = (SendRef, s), \longrightarrow \\
+a = (SendRef, s) \longrightarrow \\
 s \ge S \longrightarrow \emph{projected}(a, S) = \emph{None} \\
 \end{multline*}
 \begin{multline*}
-a = (ReceiveRef, d), \longrightarrow \\
+a = (ReceiveRef, d) \longrightarrow \\
 d \ge S \longrightarrow \emph{projected}(a, S) = \emph{None} \\
 \end{multline*}
+\begin{multline*}
+\emph{Otherwise} \longrightarrow \\
+\emph{projected}(a, S) = \emph{Some}\ a\\
+\end{multline*}
+\end{definition}
 
-For all other cases 
-$$\emph{projected}(a, S) = \emph{Some}\ a$$
 
-
+\subsubsection{Mutations}
 The type of the projected function would allow mutations of actions if necessary. Early attempts at the proof mutated actions to \emph{wrap} a sent message around to $0$ or $size-1$ when the destination was projected out. However, allowing actions to mutate as part of the projection increased the complexity of the proof. Using the modulo arithmetic construct to handle wrapping provides a more robust mathematical foundation. In the final proof, the projeciton never mutates actions only omits them if necessary. 
 
-\subsubsection{project\_to\_size} 
-Given a size and a list of actions, \emph{project\_to\_size} returns a new list of actions that omits all actions for which \emph{projected} returns None. 
+\begin{definition}[project\_to\_size]
+Given a size and a list of actions, \emph{project\_to\_size}, denoted $\mathds{P}$, returns a new list of actions that omits all actions for which \emph{projected} returns None. 
+$$
+a \in A \wedge projected(a, s) = Some\ a \longrightarrow a \in \projectsize{A}{s}
+$$
+$$
+projected(a, s) = None \longrightarrow a \notin \projectsize{A}{s}
+$$
+\end{definition}
 
 \subsection{Proofs}
 
-The proof consists of a set lemmas that progressively build from basic principles to the main conformance property we would like to prove. The \emph{stack} of supporting lemmas is visualized in Figure \ref{fig:coqLemmaStack}.
+The proof consists of a set lemmas that progressively build from basic principles to the main conformance property we would like to prove. This main theorem ensures that the set of inputs and outputs for each node in the system is invariant on the size of the system. 
+This main theorem proves that Condition \ref{itm:inductive_proof} described in Section \ref{sec:extending} holds. This main theorem utilizes many sublemmas to aid in the proof.
+The \emph{stack} of supporting lemmas is visualized in Figure \ref{fig:coqLemmaStack}.
 
 
-The main theorem proven in the coq script is called \emph{all\_valid\_systems\_conform\_to\_size\_3}. It is defined using \emph{acts\_valid} which is the validity rules described in Section \ref{sec:validity_rules}. It also uses \emph{project\_to\_size} which is a function that defines how projections are performed. Definitions of the \emph{acts\_valid} predicate and \emph{project\_to\_size} function are provided in seciton \ref{sec:definitions} above.
-For brevity the symbols $\mathds{V}$ and $\mathds{P}$ are used for \emph{acts\_valid} and \emph{project\_to\_size} respectively.
+The main theorem proven in the coq script is called \sloppy \emph{all\_valid\_systems\_conform\_to\_size\_3}. 
+The symbols $\mathds{V}$ and $\mathds{P}$ are used for \emph{acts\_valid} and \emph{project\_to\_size} respectively. 
 
 \begin{figure}[h]
     \centering
@@ -473,11 +607,11 @@ For brevity the symbols $\mathds{V}$ and $\mathds{P}$ are used for \emph{acts\_v
     \label{fig:coqLemmaStack}
 \end{figure}
 
-
 \begin{theorem}{all\_valid\_systems\_conform\_to\_size\_3}
+\label{thm:main_conf}
 $$\forall A \in \listaction\ \actsvalid{A}{n} \wedge n > 3 \longrightarrow \actsvalid{\projectsize{A}{3}}{3}.$$
 \end{theorem}
-This main theorem is proven by induction on $n$: the size of the original system. It begins by eliminating cases where the system size is smaller or equal to 3, then uses a lemma \emph{larger\_conforms\_to\_smaller} to prove it holds for the system of size 4. We then use the lemma \emph{projected\_larger\_conforms\_to\_smaller} which is similar to \emph{larger\_conforms\_to\_smaller} except that it operates on a system that has already been projected. This allows us to reduce the size of the original system by one at a time until we reach the 3-node base case which was proven previously.  In this way, these lemmas can be used to execute an inductive step that proves the property. 
+This main theorem is proven by induction on $n$: the size of the original system. It begins by eliminating cases where the system size is smaller or equal to 3, then uses a lemma \emph{larger\_conforms\_to\_smaller} to prove it holds for the system of size 4. We then use the lemma \emph{projected\_larger\_conforms\_to\_smaller} which is similar to \emph{larger\_conforms\_to\_smaller} except that it operates on a system that has already been projected. This allows us to reduce the size of the original system by one in each step until we reach the 3-node base case which was proven previously.  In this way, these lemmas can be used to execute an inductive step that proves the property. 
 
 \begin{lemma}{larger\_conforms\_to\_smaller}
 $$\forall A \in \listaction\ \actsvalid{A}{n+1} \wedge n > 2 \longrightarrow \actsvalid{\projectsize{A}{n}}{n}.$$
@@ -508,7 +642,7 @@ The intuition is that actions are removed when one of there parameters is smalle
 \end{lemma}
 
 
-This lemma proves that if a trace of actions has all the required actions for size $n+1$ that implies that when that trace of actions is projected to size $n$ it also has all the required actions. 
+This lemma proves that if a trace of actions has all the required actions for size $n+1$ that implies that when that trace of actions is projected to size $n$ it also has all the required actions for size $n$. 
 
 The intuition for this lemma is that the actions that are projected out are precisely the actions that are no longer required for the smaller system. The proof examines each type of action that is required and shows that action is also required in the larger system. This implies that the action exists in the original list. We then show that that action remains in the list after the projection.
 
@@ -518,44 +652,43 @@ The intuition for this lemma is that the actions that are projected out are prec
 \hndr{\projectsize{A}{n}}
 \end{multline*}
 \end{lemma}
-This lemma proves that if a trace of actions does not have more then one receive to the same destination of a given type that implies that when the list is projected to size $n$ it still has no duplicates.
+This lemma proves that if a trace of actions does not have more then one receive to the same destination of a given type that implies that when the trace is projected to size $n$ it still has no duplicates.
 
-This is proven by induction on the trace of actions, with the core intuition being that the projection can not introduce any new actions. This is proven in the sublemma \emph{not\_in\_orig\_not\_in\_proj}. This intuition is proven by showing that if it were the case that the projected trace of actions had a duplicate where the original trace did not this leads to a contradiction. 
+This is proven by induction on the trace of actions, with the core intuition being that the projection can not introduce any new actions. This is proven in the sublemma \emph{not\_in\_orig\_not\_in\_proj}. 
 
 
 \begin{lemma}{valid\_implies\_all\_receives\_causal\_in\_proj}
 $$ \forall A \in \listaction\ n \in \mathds{N}, n > 2 \wedge \actsvalid{A}{n+1} \longrightarrow \allrc{\projectsize{A}{n}}{n} $$
 \end{lemma}
-This lemma is the least trivial and the core problem that needed to be proven to show that the larger system conforms to the smaller system. The receive causality property is difficult because an send action that is associated with a given receive prior to the projection may be removed in the projection. However, if the send for a receive is projected out there is an equivilant send from the previous node that now can be matched with that receive. 
+This lemma is the least trivial and the core problem that needed to be proven to show that the larger system conforms to the smaller system. The receive causality property is difficult because a \emph{Send} action that is associated with a given \emph{Receive} in the original system may be removed in the projection. However, if the \emph{Send} for a \emph{Receive} is projected out there is an equivalent \emph{Send} from that node's predecessor that now can be matched with that \emph{Receive}. 
 
 This lemma is proven by careful case analysis. The proof itself spans nearly 500 lines and makes use of information known about the trace of actions based on the \emph{acts\_valid} assumption. 
 
-The \emph{all\_receives\_causal} property asserts that for all possible actions, if that action is a receive and it is in the trace of actions that implies that there must exist an action that is the associated send for that rceive, that send must be in the trace, and that send must happen before the receive. 
+We begin by introducing an action $r$ which is the \receive\ in question. We assume it exists in the projected list and that it is indeed a \receive\ and use the sublemma \emph{in\_proj\_in\_orig} to show that the action must also appear in the original trace. 
 
-We begin by introducing an action $r$ which is the receive in question. We assume it exists in the projected list and that it is indead a receive and use the sublemma \emph{in\_proj\_in\_orig} to show that the action must also appear in the original trace. 
+With the knowledge that the action was in the original trace the assumption of the validity of the original trace allows us to show that there must be a corresponding \send\ for that \receive\ in the original trace. 
 
-With the knowledge that the action was in the original trace the assumption of the validity of the original trace allows us to show that there must be a corresponding send for that receive in the orignal trace. 
-
-We now know that there is a recieve that is both in the original trace and in the projected trace, and that there is a corresponding send in the original trace. From here we examine the posible scenarios for what happens to the corresponding send in the projection.
+We now know that there is a \receive\ that is both in the original trace and in the projected trace and that there is a corresponding \send\ in the original trace. From here we examine the possible scenarios for what happens to the corresponding \send\ in the projection.
 
 These scenarios are:
 \begin{enumerate}
-\item \label{case:normal} Both are unchanged. Neither the send nor the receive are removed and neither \emph{wrap} around in the modulus.
-\item \label{case:src_wrap} The send alone is projected out. The source of the send refers to a node that is no longer in the system the original send is projected out.
-\item \label{case:dest_wrap} The send destination alone is projected out and the send now \emph{wraps}.
-\item \label{case:both_wrap} Both the send source and the send destination refer to a node that is removed. 
+\item \label{case:normal} Both are unchanged. Neither the \send\ nor the \receive\ are removed and neither \emph{wrap} around in the modulus.
+\item \label{case:src_wrap} The \send\ alone is projected out. The source of the \send\ refers to a node that is no longer in the system.
+\item \label{case:dest_wrap} The \send\ destination alone is projected out and the send now \emph{wraps}.
+\item \label{case:both_wrap} Both the \send\ source and the send destination refer to a node that is removed. 
 \end{enumerate}
 
 
-Scenario \ref{case:normal} is pretty straightforward, the send for the receive is the exact same send as in the original trace. We just show that the send remains in the projection.
+Scenario \ref{case:normal} is pretty straightforward, the \send\ for the \receive\ is the exact same \send\ as in the original trace. We just show that the send remains in the projection.
 
-Scenario \ref{case:src_wrap} is tricky. The previous associated send is projected out. But the recieve is not projected out. To prove this scenario we use information about the required actions in the original trace. After unpacking this information we can show that there must be a send that would have gone to the node that was projected out. We show that this send \emph{wraps} due to the change in the size in the modulus which means that that send is now associated with the receive in question.
+Scenario \ref{case:src_wrap} is tricky. The previously associated \send\ is now projected out. But the \receive\ is not projected out. To prove this scenario we use information about the required actions in the original trace. After unpacking this information we can show that there must be a \send\ that would have gone to the node that was projected out. We show that this \send\ \emph{wraps} due to the change in the size in the modulus which means that that send is now associated with the \receive\ in question.
 
-Scenario \ref{case:dest_wrap} is the dual of scenario \ref{case:src_wrap}. The same problem but from the other perspective. This is the case where a node that is not projected out sends to a node that is projected out. We show that that message \emph{wraps} to connect with a new recieve which is our receive in question. %THIS EXPLAINATION FEELS OFF. DOUBLE CHECK THIS
+Scenario \ref{case:dest_wrap} is the dual of scenario \ref{case:src_wrap}. The same problem but from the other perspective. This is the case where a node that is not projected out sends to a node that is projected out. We show that that message \emph{wraps} to connect with a new \receive\ which is our \receive\ in question. 
 
-Scenario \ref{case:both_wrap} is an interesting case because it is only possible if we project out more then one node in a single step. The way the property is defined this is not possible because we have a system that is valid for size $n+1$ that is projected to size $n$. It takes some mathematics and a few properties about modular arithmatic to show that this case is imposible and always leads to contradictions.
+Scenario \ref{case:both_wrap} is an interesting case because it is only possible if we project out more than one node in a single step. The way the property is defined this is not possible because we have a system that is valid for size $n+1$ that is projected to size $n$. It takes some mathematics and a few properties about modular arithmetic to show that this case is impossible and always leads to contradictions.
 
-There is one final scenario in the proof not listed above. It is the case where the destenation of the receive is projected out. This comes out as an implementation detail for how we obtained some information about the original destination. We assumed that the original destination was either less then the new size or greater or equal to it. Then we checked each case. The case where the destination was greater or equal to the new size is easily dismissed by noting that that would mean that the recieve that needs a send was projected out, which is a contradicition with the assumption that it is in the projected trace.
+%Probably not worth mentioning here. They can see it in the script if they want.
+%There is one final scenario in the proof not listed above. It is the case where the destenation of the receive is projected out. This comes out as an implementation detail for how we obtained some information about the original destination. We assumed that the original destination was either less then the new size or greater or equal to it. Then we checked each case. The case where the destination was greater or equal to the new size is easily dismissed by noting that that would mean that the recieve that needs a send was projected out, which is a contradicition with the assumption that it is in the projected trace.
 
 Once each of these cases were individually proven or shown to lead to contradictions the property proves out.
 
@@ -564,7 +697,7 @@ $$ \forall A \in \listaction\ n \in \mathds{N}, n > 2 \wedge \allst{A} \longrigh
 \end{lemma}
 This lemma shows that if \emph{all\_sends\_triggered} holds in the original system it continues to hold in the projected system. This property enforces a partial order of events.
 
-The intuition of this proof is that projections don't affect the order of events. This is proven concretely in the sublemma \emph{happens\_before\_independent\_of\_proj} which us used several times in this proof. 
+The intuition of this proof is that projections don't affect the order of events. This is proven concretely in the sublemma \emph{happens\_before\_independent\_of\_proj} which is used several times in this proof. 
 
 \begin{lemma}{all\_ids\_in\_range\_independent\_of\_proj}
 $$ \forall A \in \listaction\ n \in \mathds{N}, n > 2 \wedge \allir{A}{n+1} \longrightarrow \allir{\projectsize{A}{n}}{n} $$
@@ -577,7 +710,7 @@ This lemma proves that there are not any actions associated with nodes that woul
 \pfcb{\projectsize{A}{n}} 
 \end{multline*}
 \end{lemma}
-This property requires that the source and dest feilds in Send actions follow certain patterns. The intuition if this proof is that projection does not mutate fields. We simply show that the projected item must have been in the original list and this property holds on the action in the original list. Because it has not changed this property holds in the projected list.
+This property requires that the source and destination fields in Send actions follow certain patterns. The intuition of this proof is that projection does not mutate fields. We simply show that any projected item must have been in the original list. Because this property holds in the original list this property holds in the projected list.
 
 \begin{lemma}{phase\_sequence\_correct\_independent\_of\_proj}
 \begin{multline*}
@@ -601,110 +734,165 @@ This lemma shows that if an action is not in the original trace of actions it ca
 $$ \forall A \in \listaction\ a \in \action\ n \in \mathds{N}, a \in \projectsize{A}{n} \longrightarrow  a \in A $$
 \end{lemma}
 This lemma shows that if an action exists in the projected system then it must have existed in the original system. In other words, projection does not introduce new actions.
- It is proven by induction on the list of actions. The base case with an empty list easily leads to a contradiction. Then when considering a single action use the definition of \emph{project\_to\_size} to show that the action must have come from the original trace. 
+ It is proven by induction on the list of actions. The base case, an empty trace, easily leads to a contradiction. Then when considering a single action use the definition of \emph{project\_to\_size} to show that the action must have come from the original trace. 
 
 \begin{lemma}{happens\_before\_independent\_of\_proj}
 $$ \forall A \in \listaction\ n \in \mathds{N},
 a\ b \in A \wedge a\ b \in \projectsize{A}{n} \wedge a \happensbefore b \longrightarrow a \prec_{\projectsize{A}{n}} b
 $$
 \end{lemma}
-This is the core lemma showing that projection doesn't reorder actions in the trace. It is proven by induction on the trace of actions. The base case with an empty trace is easily dismissed with a proof by contradiction. 
-Then when we consider a list of actions with one additional action prepended to the list. We call this new action $a$. On this new list we know that the action $x$ happens before the action $y$.
-We can examine what might happen to $a$ in the projected trace.
-Using the sublemma \emph{projected\_in\_or\_out} we know that an action either remains in the projected trace or is removed entirely from the projected trace.
+This is the core lemma showing that projection doesn't reorder actions in the trace. It is proven by induction on the trace of actions. 
+
+The base case, an empty trace, is easily dismissed with a proof by contradiction. 
+Then when we consider a trace of actions with one additional action prepended to the trace. We call this new action $x$. On this new trace, we know that the action $a$ happens before the action $y$.
+We can examine what might happen to $x$ in the projected trace.
+We know that an action either remains in the projected trace or is removed entirely from the projected trace.
 We will consider both of these cases.
-If $a$ remains in the list then it becomes the first item in the list. 
-We then consider the possible cases for what $a$ is.
-$a$ could be equal to $x$, it could be equal to $y$, or it could be neither $x$ nor $y$.
-If it is equal to $x$ then because it is the first item in the list it must happen before $y$.
-If it is equal to $y$ it means that $y$ must happen before $x$, however, $a$ is also the start of the unprojected list so we can show that that is a contradiction with our assumption that $x$ happens before $y$.
-If it is either $x$ nor $y$ then it does not have any bearing on whether $x$ happens before $y$ or not. We can then consider the rest of the list to check that $x$ happens before $y$ in the sublist. This reduces the problem down to our inductive hypothesis.
-Finally, we must consider the case where $a$ is removed from the list in the projection. This immediately reduces to the inductive hypothesis which allows us to prove that the \emph{happens\_before} property is independent of projection.
 
-\section{Extending the model-checking results using the inductive proof}
-With the results presented in Section \ref{chap:model_checking_results} and Section \ref{chap:coq_results} we have shown that the desired properties hold for a small system and that an arbitrarily large system can be projected to a 3-node base system. We observe the possible set of inputs and outputs of each node in the base system are unchanged regardless of the size of the system. 
+If $x$ remains in the trace then it becomes the first item in the trace. 
+We then consider the possible cases for what $x$ is.
+$x$ could be equal to $a$, it could be equal to $b$, or it could be neither $a$ nor $b$.
+If it is equal to $a$ then because it is the first item in the trace it must happen before $b$.
+If it is equal to $b$ it means that $b$ must happen before $a$, however, $x$ is also the start of the unprojected trace so we can show that that is a contradiction with our assumption that $a$ happens before $b$ in the original trace.
+If $x$ is either $a$ nor $b$ then it does not have any bearing on whether $a$ happens before $b$ or not. We can then consider the rest of the trace to check that $a$ happens before $b$ in the subtrace. This reduces the problem to our inductive hypothesis.
 
-To extend the model checking results to a large system we can use Trace Theory as described by Dill. Trace theory considers when it is safe to substitute one module for another. If for any given context (a set of possible inputs) a replacement module generates the same set of possible outputs, then the replacement module can be swapped out for the original without affecting the behavior of the rest of the system \cite{dill_trace_theory}. This logic is mirrored in the Liskov Substitution principle. If the set of accepted inputs to a replacement module is at superset of, or equal to of the set of accepted inputs in the original, and if the set of possible outputs of a module is a subset of, or equal to the set of possible outputs of the original, then it can be safely swapped out \cite{liskov_substitution}. 
+Finally, we must consider the case where $x$ is removed from the trace in the projection. This immediately reduces to the inductive hypothesis which allows us to prove that the \emph{happens\_before} property is independent of projection.
 
-The validity rules checked by the inductive proof assert that some properties of the inputs and outputs of each node are invariant on the size of the system. Each rule as defined in Section \ref{sec:validity_rules} takes the form of $ \forall n \in \mathds{N}, P(n)$ Where $P(n)$ is some predicate that makes claims about the inputs and outputs of the node with ID $n$. By examining the outputs of a node preceding a target and the inputs of a node following a target we can identify the allowable inputs and possible outputs of that target.
+\subsection{Results}
+Theorem \ref{thm:main_conf} tells us that the set of possible trace actions taken by each node in a system is independent of the size of the system. Because this is true for each node in a chain of n nodes we know that the inputs received by a chain of n nodes are equivalent to the inputs received by a single node. Similarly, the outputs of a chain of n nodes are equivalent to the output of a single node. This in turn implies that a chain of n nodes conforms to a single node.
+\begin{multline*}
+\\
+\forall A \in \listaction\ \actsvalid{A}{n} \wedge n > 3 \longrightarrow \actsvalid{\projectsize{A}{3}}{3} \longrightarrow \\
+\inputset{N_0} = \inputset{[N_0, N_1, ... N_n]}
+\wedge 
+\forall I \in \inputset{N_0}, \outputset{N_0}{I} = \outputset{[N_0, N_1, ... N_n]}{I} \longrightarrow \\
+\forall n \in \mathds{N}, \tracestruc{[N_0, N_1, ... N_n]} \preceq \tracestruc{N_0} \\
+\end{multline*}
 
-Consider a target that is a single node with identifier $i \in \mathds{N}, 0 \le i < S$. The actions in the trace that are inputs for $i$ are those of the form:
-\begin{enumerate}
-    \item  $(Send, s, i, m)$
-    \item  $(Receive, i, m)$
-    \item  $(ReceiveRef, i)$
-\end{enumerate}
-The actions in the trace that are outputs for $i$ are those of the form:
-\begin{enumerate}
-    \item  $(Send, i, d, m)$
-    \item  $(SendRef, i)$
-\end{enumerate}
+Thus we see that Lemma \ref{lemma:chain_conform} must be true.
 
-The validity rules provide restrictions on the form the inputs must take. For example, the rules specify that $(Receive, i, Promise)$ must be present. It also specifies that  $(Send, i-1, i, Promise) \happensbefore (Receive, i, Promise)$. The validity rules also provide restrictions on the form that the outputs must take. For example, they specify that if the input does not include $(Send i+1, i, Commit)$ that the output must include $(SendRef, i)$ must be in the trace. In this way the rules constrain the allowable inputs and the possible outputs of the given node.
-Consider now a chain of relay nodes with IDs $(i, i+1, ..., j-1, j), 0 \le i < j < S$ We can note that---according to the validity rules--- the inputs to this chain of nodes are equivalent to the inputs to $i$, and the outputs to this chain of nodes are equivalent to the outputs of $j$. 
+\section{Proving safe substitution}
+\label{sec:inputs_map}
+We would like to prove Lemma \ref{lemma:ind_cof_model}:
+$$\tracestruc{N_i} \preceq \tracestruc{N_m}$$
 
-So the inputs and outputs of a single node or a chain of N nodes are equivalent. The proof described in Section \ref{chap:coq_results} also proves that the inputs and outputs of each node are invariant on the size of the system. Because these inputs and outputs are equivalent, by either trace theory, or the Liskov substitution principle, this implies that no matter the size of the system, a chain of N nodes can be substituted for a single node without affecting the behavior of the rest of the system.
+The core question posed by this lemma is:
+Can we replace a node as implemented in the Spin model with a node as implemented in the inductive proof?
 
-This is clearly true as defined in the inductive proof, however, can this be used to show that a chain of nodes can replace a single node in the Spin system? In other words, can we replace a single node in the Spin model with a chain of N nodes as defined in the inductive proof?
+Using similar logic as described in Section \ref{chap:coq_results} we can show that the conformance relation we wish to prove is equivilant to:
+$$\inputset{N_m} \subseteq \inputset{N_i}
+\wedge
+\left[\  \forall I \in \inputset{N_m}, \outputset{N_m}{I} \supseteq \outputset{N_i}{I})\ \right] $$
 
-For this to be provably correct two conditions must be met:
-\begin{enumerate}
-    \item The chain of N nodes defined in the proof can accept all possible outputs that could be generated by the Spin model.
-    \item The possible outputs of the chain of N nodes are inputs that were considered in the Spin model. 
-\end{enumerate}
+We will consider the left side and the right side of the disjunction separately. 
+Section \ref{sec:inputs_smaller} discusses how the Spin model was adjusted to verify the left side.
+Section \ref{sec:outputs_bigger} argues that the right side holds.
 
-If these conditions are met then the chain of N nodes be substituted safely in the spin model. Section \ref{sec:inputs_smaller} discusses how the Spin model was adjusted to verify the first condition. Section \ref{sec:outputs_bigger} argues that the second condition holds.
-
-\subsection{Constructing a verified large system}
-There is one final consideration: The desired properties have not been verified on the chain of N nodes used as a replacement module. However, the properties have been verified on the other nodes in the now larger system. To ensure that the properties hold for every node in the larger system we must show that the large system can be constructed such that any node in the large system is not replaced. 
-
-This is fairly simple to accomplish. For example, if we would like to leave the 7th node in a 15-node system unreplaced, we can choose to replace the originator with a chain of 6 nodes (including a new node with ID 0 to act as the originator). We then leave the first relay node in place as our desired 7th node. Then we replace the second relay node with a chain of 8 nodes. We know that those substitutions are safe substitutions so we can show that the properties hold for the 7th node in the system. Using a similar process we can show that any node in the system can be left unreplaced. Thus we know that the properties hold for every node in a system of arbitrary size. 
-
-\section{The inductive proof accepts all model-checking outputs}
+\subsection{The inductive proof's accepted inputs are a superset of the model-checking accepted inputs}
 \label{sec:inputs_smaller}
-Consider the set of inputs allowable by the validity rules, ($C$), and the set of outputs that can be generated by the Spin model ($S$). We must show that $S \subseteq C$ to ensure that the replacement module can accept all of the inputs it would experience in the Spin model. If $S \nsubseteq C$ then there must exist a trace explored by Spin that breaks the validity rules. By encoding the validity rules as properties in Spin, we can then verify that the rules hold for all of the traces evaluated by Spin. 
+If $\inputset{N_m} \nsubseteq \inputset{N_i}$ then there must exist a trace explored by Spin that breaks the validity rules. By encoding the validity rules as properties in Spin, we can then verify that the rules hold for all of the traces evaluated by Spin. 
 
 To implement the properties to match the Coq rules the Spin model needed to be extended to generate a data structure that recorded the trace of actions. This data structure is referenced in the new properties to verify the rules about traces hold. Because the actions considered in Coq are all inputs and outputs of nodes, to generate this trace of actions it was only necessary to adjust the helper functions that send messages and then add a few lines to add actions to the trace when a message is received. 
 
 After making these adjustments the validity rules can be written in Spin as properties, then Spin will evaluate each trace of events to ensure that the properties hold. 
 
-When Spin verifies these properties it produces some counter-examples which we would like to exclude. These counterexamples are cases where---because messages are lost---a \promise message does not reach each node. This violates the \emph{has\_required\_actions} rule. However, these traces would be valid for a system of size smaller than 3. Because we are interested only in mapping the Coq proof to the spin model for the base system, we want to introduce a new fairness property that eliminates cases that represent systems smaller than the base system. This property requires that each node eventually leave the \emph{no\_lift} state. After triggering on this fairness property, each of the validity rules was successfully verified to hold for all traces evaluated by Spin. 
+When Spin verifies these properties it produces some counter-examples which we would like to exclude. These counterexamples are cases where---because messages are lost---a \promise\ message does not reach each node. This violates the \emph{has\_required\_actions} rule. However, these traces would be valid for a system of size smaller than 3. Because we are interested only in mapping the Coq proof to the spin model for the base system, we want to introduce a new fairness property that eliminates cases that represent systems smaller than the base system. This property requires that each node eventually leave the \emph{no\_lift} state. After triggering on this fairness property, each of the validity rules verify for all traces evaluated by Spin. 
 
 Similar to the previous fairness property we added a check to ensure that the new \emph{of\_size\_3} property is achieved. This check passes.
 
-These results verify that $S \subseteq C$. Because of this, we know that the chain of N nodes can accept all possible outputs of the Spin model. 
+These results verify that 
+$\inputset{N_m} \subseteq \inputset{N_i}$. 
 
-\section{The model checker accepts all inductive-proof outputs}
+\subsection{The inductive proof's outputs are a subset of the model-checking outputs}
 \label{sec:outputs_bigger}
-The set of all combinations of outputs for a chain of N nodes grows exponentially with the size of N, however, these outputs fit into a small set of equivalence classes. 
+We can observe that the only communication that a node has is with its successor or its predecessor in the ring or with the referee. This is true for nodes as defined in the inductive proof, as well as for nodes as defined in the model-checker. 
+We can examine all the possible combinations of messages for a single node to its predecessor, its successor, and the referee. Because a node might send more then one message of a given type this set is potentially infinitely large. However, receiving a message in the MyCHIPs system is idempotent. Receiving a message of the same type twice does not affect the state of a node. Because of this The set of possible outputs we need to can be reduced into a small set of equivalence classes where each possible output is represented by a canonical member that has only one of each type of message.
 
+We can define these equivalence classes as an ordered list of actions with the property that each type of action appears in the list at most one time. 
+We use the notation $P$ to denote a promise sent to the successor, $C$ to denote a commit sent to the predecessor, $S$, to denote a status request to the referee. We ignore receive actions as those are always inputs and we are concerned only with outputs.
+For example: $[P, S, C]$ is the case where the node sends a \promise\ then sends a \emph{status} request, then sends a \commit.
+
+These equivalence classes are:
 \begin{enumerate}
-    \item The case where no Promise message is sent
-    \item The case where a Promise is sent but no Commit is sent
-    \item The case where a Promise and a Commit is sent
-    \item Each of the previous cases where 1 or more messages are also sent to the Referee
+    \item $[S]$
+    \item $[P, S]$
+    \item $[S, P]$ \krs{This was not found! Mealy machine acts right away! But the receive could be later...}
+    \item $[P, C]$
+    \item $[P, S, C]$
+    \item $[S, P, C]$
 \end{enumerate}
 
-We can evaluate if each of these equivalence classes is considered in the Spin model by generating a property that asserts a trace of that class is not present. If all of these properties fail, then we know that each equivalence class is accepted by the Spin model.
-\krs{Add this to the mapping spin model. And add results here}
+We can evaluate if each of these equivalence classes is considered in the Spin model by generating a property that asserts a trace of that class is not present, similar to the existential check for the fairness property described in Section \ref{chap:model_checking_results}. If Spin verifies that each equivalence class is present then and we can conclude that Lemma \ref{lemma:ind_cof_model} holds.
+
+Using the same adjusted model described in Section \ref{sec:inputs_smaller} we can write these properties. These properties are existential properties so no fairness constraint is needed. All of these equivalence classes are observed in the Spin model. This allows us to conclude that:
+$$\forall I \in \inputset{N_m}, \outputset{N_m}{I} \supseteq \outputset{N_i}{I})\ $$
+
+\krs{TODO: I still need to add this to the mapping spin model.}
+
+\section{Assuring all nodes in the system are verified}
+\label{sec:nodes_map_base}
+We would like to prove Lemma \ref{lemma:all_nodes_covered}. 
+$$
+\forall N \in S, \exists N' \in \basesystem, \tracestruc{N'} = \tracestruc{N}.
+$$
+The core question asked by this Lemma is:
+Do all nodes in a large system have an analog in the base system?
+To prove this we need to show that we can construct a system with an arbitrarily large number of nodes by replacing nodes in the base system with a chain of n nodes such that an arbitrarily selected target node is a node that was originally in the base system.
+
+\egm{Move this into it's own section. Admit the lemma here, as needed for the proof, and in that later section, make the best argument possible and state that future work is to strengthen. The following paragraph and algorithm would go to that section.}
+\krs{Moved from Section 3 here}
+
+For example, if we would like to verify the properties hold for the node with ID 6 in a 15-node system, we construct a system where that node is unreplaced. To do this can choose to replace the originator with a chain of 6 nodes (including a new node with ID 0 to act as the originator). We then leave the first relay node in place as our desired 7th node (ID 6). Then we replace the second relay node with a chain of 8 nodes. We know that those substitutions are safe substitutions so we know the constructed system conforms to the base system. i.e. the target node cannot tell the difference between the base system and the newly constructed system. From this, we know that the properties hold for the target node. 
+
+This method can be generalized to construct a system of arbitrary size to verify the properties of an arbitrarily selected target. This generalization is described by Algorithm \ref{alg:const_ver}.
+
+
+\begin{algorithm}
+\caption{Constructing a verified system}
+\label{alg:const_ver}
+\begin{algorithmic}
+\State let $i \in \mathds{N}$ be the target ID, $s \in \mathds{N}$ be the target size.
+\If{$i = 0 \vee\ i=(s - 1)$}
+    \State Replace \emph{Relay 1} in base system with a chain of $(s - 2)$ nodes.
+    \State This is the verifying system.
+\Else
+    \State Replace the \emph{Originator} in base system with a chain of $i$ nodes.
+    \State Replace \emph{Relay 2} in the base system with a chain of $(s - i - 1)$ nodes. 
+    \State This is the verifying system.
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
+
+Because we can construct the system $S$ by replacing nodes in the base system without replacing an arbitrary target node, we can conclude:
+$$\forall N \in S, \exists N' \in \basesystem, \tracestruc{N'} = \tracestruc{N}$$.
 
 \section{Related Work}
 \krs{Need to add sections about other results that use conformance, as well as infinite state model checking}
+
+
 There are numerous bodies of work that solve similar problems or utilize similar constructs. The following list is particularly relevant. 
- 
+
+\subsection{Infinate State Model Checking}
+Clarke, Grümberg, and Browne describe a method for verifying properties on systems with many identical subprocesses. This method relies on a proof of bisimulation which is difficult to prove if these subprocesses can make non-deterministic choices as the nodes in the MyCHIPs system can. The method described in this work may have some isomorphism with their method but presents it in terms of conformance and other modern model-checking methods. 
+
+German and Sistla build on the work of Clarke, Grümberg, and Browne, but present a fully automatic method that can reason about multiple identical processes without any manual proofs about those processes. 
+
+German and Sistla's work is referenced by other papers describing methods for model-checking infinite state spaces. The methods at a high level make an adjustment to the state matching to weaken the equivalence relation. Two states may be unique due to some infinite variable (a natural number) being different but they are equivalent in all ways we care about for verifying a property. This allows the machinery that model checks state a system for liveness and safety properties to operate on an infinite state space. This is somewhat akin to abstract interpretation. 
+
+\subsection{Digital Currency Background and Verification}
+There are also several papers relating to digital currencies which may be helpful background when considering the MyCHIPs system described in Appendix \ref{apdx:mychips}.
+
  Nakamoto describes how transferable digital tokens can be double-spent. The paper introduces bitcoins and describes the proof of work method of overcoming this problem which is often referred to as blockchain technology. \cite{bitcoin} 
 
  Bateman recognizes that the double spending problem is present only in digital currencies that are both duplicatable and transferable. Blockchain technology prevents digital tokens from being duplicated. MyCHIPs instead is designed with non-transferable tokens. MyCHIPs utilizes credit lifts to allow these non-transferable tokens to be virtually fungible and to allow for effective transactions to be made. 
  
- Huang, Ogles, and Mercer prove that \emph{doesn't commute}, a weakened version of the happens-before relation, is sound for certain common classes of task parallel programs. They present a mechanized proof that proves properties for all traces constrained by a partial order. The methods demonstrated by Huang, Ogles, and Mercer can be utilized in this work's mechanized proof that the larger system conforms to the behavior of the smaller system. \cite{ben_DC}
-
  Bhargavan et. al. Verify Smart Contracts \cite{SmartContracts}. Smart contracts are a type of distributed computation where the program that is executed is secured in a blockchain. While not directly related, smart contracts have the same financial stakes MyCHIPs have and some of their techniques could give inspiration.  Bhargavan et. al, translated the smart contract code into a functional programming language, F*, aimed at verification. This allowed for contract verification based on F* type-checking.
- 
- 
+
+ \subsection{Proofs and methods for distributed systems}
  Fischer, Lynch, and Paterson,\cite{Fischer} prove the impossibility of consensus on even a Boolean, with even one faulty (or malicious) process. However, this is only true if the processes don't have synchronized clocks. This proof shows the necessity of the referee with strong reachability requirements for the lift algorithm to always eventually reach a consensus on if the lift should commit or be nullified.
  
- 
- Schneider summarizes and frames many fault-tolerant distributed algorithms in the framework of  machines\cite{StateMachine}. He shows how many common algorithms are isomorphic to, and can be derived using, the state machine approach. It is a helpful method to characterize and compare different approaches.
+ Schneider summarizes and frames many fault-tolerant distributed algorithms in the framework of  machines\cite{StateMachine}. He shows how many common algorithms are isomorphic to, and can be derived using, the state machine approach. It is a helpful method to characterize and compare different approaches and this work is inspired by these methods.
  
  Lamport\cite{Lamport}, describes a refinement process that takes a distributed fault-tolerant consensus algorithm and hardens it to be tolerant of byzantine actors through a process he calls \emph{byzantizing.} This method may be useful in future work to ensure the MyCHIPs pr=otocol follows key principles of Byzantine hard protocols.
  
@@ -712,8 +900,10 @@ There are numerous bodies of work that solve similar problems or utilize similar
  
  Konnov, Veith, and Widder explore the unsolved problems associated with model checking distributed algorithms. This can serve as a hazard map of difficult unsolved problems. It would be unfortunate if solving a known problem that is tangential to this work becomes a prerequisite to finishing. This also can serve to give context to this work and show how it progresses towards solving some of these problems.\cite{Konnov}
 
-%%
-%% If your work has an appendix, this is the place to put it.
+\subsection{Work that uses similar methods for mechanized proofs}
+ Huang, Ogles, and Mercer prove that \emph{doesn't commute}, a weakened version of the happens-before relation, is sound for certain common classes of task parallel programs. They present a mechanized proof that proves properties for all traces constrained by a partial order. The methods demonstrated by Huang, Ogles, and Mercer were used as inspiration for some of this work's mechanized proofs. \cite{ben_DC}
+ 
+
 \appendix
 
 \section{The MyCHIPs system}
