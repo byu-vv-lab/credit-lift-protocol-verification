@@ -3,15 +3,15 @@
 # USAGE: verify.sh model.pml property1 property2 ...
 #   or   cat properties.txt | xargs verify.sh <bpmn_file> <property_file>
 
-properties=(size_3_path_exists fair_size_3_path_exists has_required_actions phase_sequence_correct has_no_duplicate_receives_0a has_no_duplicate_receives_0b has_no_duplicate_receives_1 has_no_duplicate_receives_2 has_no_duplicate_receives_3 has_no_duplicate_receives_4 )
-expectedResults=(1 1 0 0 0 0 0 0 0 0)
-model="MatchCoqModel.pml"
+properties=(size_fair_path_exists hra ast psc0 psc1 psc2 psc3 psc4 rrc eqc0 eqc1 eqc2 eqc3 eqc4 eqc5 eqc6 eqc7 eqc8 eqc9 eqc10)
+expectedResults=(1 0 0 0 0 0 0 0 0 1 1 0 0 1 1 1 1 1 1 1)
+model="MinimalModel.pml"
 
 for i in ${!properties[@]}
 do
   prop=${properties[$i]}
   printf "${prop}:\t"
-  if spin -run -ltl ${prop} -f -m50000 ${model} | grep -q "errors: 0"
+  if spin -run -ltl ${prop} -f -m50000 ${model} 2>/dev/null | grep -q "errors: 0"
   then
       printf "No Errors Found.\t"
       if [ ${expectedResults[i]} -eq 0 ]

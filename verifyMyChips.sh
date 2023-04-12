@@ -3,15 +3,15 @@
 # USAGE: verify.sh model.pml property1 property2 ...
 #   or   cat properties.txt | xargs verify.sh <bpmn_file> <property_file>
 
-properties=(fairPathExists p1 p2 p3 p4)
-expectedResults=(1 0 0 0 0 0)
-model="MatchCoqModel.pml"
+properties=(p1 p2 p3 p4)
+expectedResults=(0 0 0 0 0)
+model="MinimalModel.pml"
 
 for i in ${!properties[@]}
 do
   prop=${properties[$i]}
   printf "${prop}:\t"
-  if spin -run -ltl ${prop} -f -m50000 ${model} | grep -q "errors: 0"
+  if spin -run -ltl ${prop} -f -m50000 ${model} 2>/dev/null | grep -q "errors: 0"
   then
       printf "No Errors Found.\t"
       if [ ${expectedResults[i]} -eq 0 ]
