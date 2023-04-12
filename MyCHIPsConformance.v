@@ -14,11 +14,6 @@ Require Import Psatz. (* Give me lia please *)
 Require Import ZArith_base. (*I'll need some integers*)
 
 Infix "mod" := Z.modulo (at level 40, no associativity).
-Compute -1 mod 12.
-Example mod_example_1 : (-1) mod 12 = 11%Z.
-Proof.
-  reflexivity.
-Qed.
 
 Module Conformance.
 
@@ -113,9 +108,9 @@ Module Conformance.
       destruct x, y.
       destruct m, m0; try (right; discriminate).
       --
-      pose proof (Z_eq_dec src src0).
+      pose proof (Z.eq_dec src src0).
       destruct H.
-      pose proof (Z_eq_dec dest dest0).
+      pose proof (Z.eq_dec dest dest0).
       destruct H.
       left.
       rewrite e, e0.
@@ -132,9 +127,9 @@ Module Conformance.
       inversion H.
       contradiction.
       --
-      pose proof (Z_eq_dec src src0).
+      pose proof (Z.eq_dec src src0).
       destruct H.
-      pose proof (Z_eq_dec dest dest0).
+      pose proof (Z.eq_dec dest dest0).
       destruct H.
       left.
       rewrite e.
@@ -164,7 +159,7 @@ Module Conformance.
       discriminate.
       --
       destruct m, m0.
-      pose proof (Z_eq_dec dest dest0).
+      pose proof (Z.eq_dec dest dest0).
       destruct H.
       left.
       rewrite e.
@@ -178,30 +173,7 @@ Module Conformance.
       discriminate.
       right.
       discriminate.
-      pose proof (Z_eq_dec dest dest0).
-      destruct H.
-      left.
-      rewrite e.
-      reflexivity.
-      right.
-      red.
-      intros.
-      inversion H.
-      contradiction.
-      --
-      right.
-      discriminate.
-      --
-      right.
-      discriminate.
-      --
-      right.
-      discriminate.
-      --
-      right.
-      discriminate.
-      --
-      pose proof (Z_eq_dec src src0).
+      pose proof (Z.eq_dec dest dest0).
       destruct H.
       left.
       rewrite e.
@@ -224,7 +196,30 @@ Module Conformance.
       right.
       discriminate.
       --
-      pose proof (Z_eq_dec dest dest0).
+      pose proof (Z.eq_dec src src0).
+      destruct H.
+      left.
+      rewrite e.
+      reflexivity.
+      right.
+      red.
+      intros.
+      inversion H.
+      contradiction.
+      --
+      right.
+      discriminate.
+      --
+      right.
+      discriminate.
+      --
+      right.
+      discriminate.
+      --
+      right.
+      discriminate.
+      --
+      pose proof (Z.eq_dec dest dest0).
       destruct H.
       left.
       rewrite e.
@@ -792,7 +787,6 @@ Module Conformance.
         assumption.
         inversion H4.
         rewrite H6.
-        Search count_occ.
         apply count_occ_not_In.
         unfold count_occ_action in H6.
         apply count_occ_not_In in H6.
@@ -1021,6 +1015,7 @@ Module Conformance.
       destruct Z_le_dec.
       contradiction.
       pose proof H (Receive dest m) H0.
+      simpl in H2.
       lia.
       unfold projected in H1.
       destruct (Z_le_dec (Z.of_nat n) src); try contradiction.
@@ -1060,7 +1055,6 @@ Module Conformance.
       destruct n.
       lia.
       remember (Z.of_nat (S (S n))) as m.
-      SearchAbout Z.modulo.
       assert (m > 0)%Z.
       lia.
       pose proof Zdiv.Z_mod_plus (-1) 1 m H0.
@@ -1227,6 +1221,7 @@ Module Conformance.
           clear H16.
           pose proof H4 (Send src dest0 m0) H11.
           assert (src = Z.of_nat n).
+          simpl in *.
           lia.
           (* Because we know messages are always passed to direct neighbors we know dest0 too*)
           (* two possible cases for dest *)
