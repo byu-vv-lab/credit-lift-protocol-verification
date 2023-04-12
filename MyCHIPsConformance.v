@@ -53,7 +53,7 @@ Module Conformance.
      We have all the required actions and only the required actions for the MyCHIPS Protocol
      Those actions occur in the correct order.
 
- *)
+   *)
 
   Definition has_required_actions (acts : list Action) (size : nat) :=
     (
@@ -75,7 +75,7 @@ Module Conformance.
     (S n) < size -> (*Note strictly less then size means promise to Originator is not required*)
     In (Send (Z.of_nat (n)) (Z.of_nat (S n)) Promise) acts /\
     In (Receive (Z.of_nat (n)) Promise) acts
-    ) /\ In (Send 0 (-1) Commit) acts.
+    ).
   (*Consider if last requirement should be true only if there exists a commit send or receive*)
 
   Ltac recursive_try_reflexivity := (repeat left+right); reflexivity.
@@ -98,13 +98,13 @@ Module Conformance.
     split.
     intros.
     destruct n.
-    split;
     recursive_try_reflexivity.
     destruct n.
-    split;
     recursive_try_reflexivity.
     lia.
+    destruct n.
     recursive_try_reflexivity.
+    lia.
   Qed.
 
   Lemma action_equal_decidable : forall x y : Action, {x = y}+{x <> y}.
@@ -303,7 +303,6 @@ Module Conformance.
     | Send 0 (-1) Commit => match b with 
                             | Send 0 (-1) Commit => True
                             | Send _ _ Commit => happens_before a b acts
-                            | Send _ _ Promise => happens_before b a acts
                             | Receive _ Commit => happens_before a b acts
                             | _ => True
                             end
@@ -312,14 +311,19 @@ Module Conformance.
                            | Send _ _ m => happens_before b a acts
                            | _ => True
                            end
+    | SendRef s => match b with
+                   |  Send s _ Promise => happens_before b a acts
+                   |  Receive s Commit => happens_before a b acts
+                   | _ => True
+                   end
     | _ => True
     end.
 
   Definition acts_valid (acts : list Action) (size : nat) :=
-    size > 2 /\
+    size > 1 /\
     has_required_actions acts size /\
-    (*has_no_duplicate_receives acts /\*)
-    has_no_duplicate_actions acts /\
+    has_no_duplicate_receives acts /\
+    (*has_no_duplicate_actions acts /\*)
     all_receives_causal acts size /\
     all_sends_triggered acts /\ 
     all_ids_in_range acts size /\
@@ -354,7 +358,6 @@ Module Conformance.
     lia.
     split.
     intros.
-    split.
     destruct n.
     recursive_try_reflexivity.
     destruct n.
@@ -365,7 +368,6 @@ Module Conformance.
     destruct n.
     recursive_try_reflexivity.
     lia.
-    recursive_try_reflexivity.
     split.
     admit.
     split.
@@ -487,6 +489,7 @@ Module Conformance.
     reflexivity.
     reflexivity.
     reflexivity.
+  Admitted.
 
     
     
@@ -658,7 +661,7 @@ Module Conformance.
     assumption.
   Qed.
 
-  Lemma has_required_actions_independent_of_proj : forall (acts : list Action) (n : nat), has_required_actions acts (S n) /\ n > 2 -> has_required_actions (project_to_size n acts) n.
+  Lemma has_required_actions_independent_of_proj : forall (acts : list Action) (n : nat), has_required_actions acts (S n) /\ n > 1 -> has_required_actions (project_to_size n acts) n.
     Proof.
       intros.
       destruct H as [H Hng2].
@@ -740,39 +743,27 @@ Module Conformance.
       +
       split.
       intros.
-      split.
       apply in_projection_remains.
       split.
       assert (S n0 < S n).
       lia.
-      destruct H0.
       pose proof H0 n0 H2.
-      destruct H4.
+      destruct H3.
       assumption.
       unfold in_projection.
       simpl.
       destruct Z_le_dec; try lia.
       destruct Z_lt_dec; try lia.
-      destruct H0.
       assert (S n0 < S n).
       lia.
-      pose proof H0 n0 H3.
-      destruct H4.
+      pose proof H0 n0 H2.
+      destruct H3.
       apply in_projection_remains.
       split.
       assumption.
       unfold in_projection.
       simpl.
       destruct Z_le_dec; try lia.
-      destruct H0.
-      apply in_projection_remains.
-      split.
-      assumption.
-      unfold in_projection.
-      destruct n.
-      lia.
-      simpl.
-      trivial.
     Qed.
 
   Lemma has_no_duplicate_receives_independent_of_proj : forall (acts : list Action) (n : nat), has_no_duplicate_receives acts -> has_no_duplicate_receives (project_to_size n acts).
@@ -1128,7 +1119,7 @@ Module Conformance.
       discriminate.
     Qed.
 
-    Lemma valid_implies_all_receives_causal_in_proj : forall (acts : list Action) (n : nat), acts_valid acts (S n) -> n > 2 -> all_receives_causal (project_to_size n acts) n.
+    Lemma valid_implies_all_receives_causal_in_proj : forall (acts : list Action) (n : nat), acts_valid acts (S n) -> n > 1 -> all_receives_causal (project_to_size n acts) n.
     Proof.
       (*Unpack all the information we know*)
       intros.
@@ -1292,9 +1283,51 @@ Module Conformance.
           lia.
           destruct m.
           discriminate.
+          assert (In (Send 0 (-1) Commit) (acts)).
+          assert ((src <> 0%Z) /\ In (Send src dest0 Commit) acts).
+          split.
+          lia.
+          assumption.
+          pose proof H3 src dest0 Commit H24.
+          destruct H25.
+          assert (isReceive (Receive src Commit) /\ In (Receive src Commit) acts).
+          split.
+          trivial.
+          assumption.
+          pose proof H2 (Receive src Commit) H27.
+          destruct H28.
+          destruct H28.
+          destruct H29.
+          unfold is_send_for_receive in H30.
+          destruct x; try contradiction.
+          destruct H30.
+          rewrite H31 in *.
+          clear H31.
+          unfold node_eq in H30.
+          symmetry in H30.
+          rewrite Zdiv.Zmod_small in H30.
+          rewrite H17 in H30.
+          pose proof H4 (Send src0 dest1 Commit) H28.
+          simpl in H31.
+          assert (dest1 = -1 \/ 0 <= dest1 <= Z.of_nat (S n))%Z.
+          lia.
+          destruct H32.
+          pose proof H5 (Send src0 dest1 Commit) H28.
+          simpl in H33.
+          assert (src0 = 0)%Z.
+          lia.
+          rewrite H32 in H28.
+          rewrite H34 in H28.
+          assumption.
+          pose proof H5 (Send src0 dest1 Commit) H28.
+          simpl in H33.
+          rewrite Zdiv.Zmod_small in H30.
+          lia.
+          lia.
+          lia.
           assert (dest0 = ((Z.of_nat n) - 1)%Z).
           lia.
-          rewrite H24 in H13.
+          rewrite H25 in H13.
           rewrite Zdiv.Zmod_small in H13.
           rewrite Zdiv.Zmod_small in H13.
           exists (Send 0 (-1) Commit).
@@ -1304,18 +1337,22 @@ Module Conformance.
           split.
           assumption.
           lia.
-          unfold has_required_actions in H25.
-          destruct H25.
+          unfold has_required_actions in H26.
           destruct H26.
+          apply in_projection_remains.
+          split.
           assumption.
+          unfold in_projection.
+          unfold projected.
+          destruct Z_le_dec; try lia.
+          destruct Z_lt_dec; try lia.
           split.
           pose proof Hpo (Send 0 (-1) Commit) (Receive dest Commit).
-          simpl in H25.
+          simpl in H26.
           destruct H.
-          destruct H26.
           apply happens_before_independent_of_proj.
           split.
-          apply H25.
+          apply H26.
           unfold has_required_actions in H.
           assumption.
           assumption.
@@ -1337,7 +1374,7 @@ Module Conformance.
           simpl.
           assert (n > 1).
           lia.
-          pose proof mod_minus_one n H25.
+          pose proof mod_minus_one n H26.
           split.
           lia.
           reflexivity.
@@ -1434,16 +1471,15 @@ Module Conformance.
           assert (In (Send (Z.of_nat (n - 1)) (Z.of_nat n) Promise) (project_to_size n acts)).
           unfold has_required_actions in H.
           destruct H.
-          destruct H21.
           assert ((S (n - 1)) < (S n)).
           lia.
-          pose proof H21 (n - 1) H23.
-          destruct H24.
+          pose proof H21 (n - 1) H22.
+          destruct H23.
           apply in_projection_remains.
           split.
           assert ((S (n - 1)) = n).
           lia.
-          rewrite H26 in H24.
+          rewrite H25 in H23.
           assumption.
           unfold in_projection.
           simpl.
@@ -1683,7 +1719,6 @@ Module Conformance.
     destruct src, dest, m; try trivial.
     destruct p; try trivial.
     destruct src0, dest0, m0; try trivial; try apply_happens_before_iop.
-    destruct p; try apply_happens_before_iop.
     destruct p; try trivial; try apply_happens_before_iop.
     destruct src; try trivial; try apply_happens_before_iop;
     destruct dest; try trivial; try apply_happens_before_iop.
@@ -1696,8 +1731,8 @@ Module Conformance.
     destruct dest; try trivial; try apply_happens_before_iop.
     destruct dest; try trivial; try apply_happens_before_iop.
     destruct dest; try trivial; try apply_happens_before_iop.
-    trivial.
-    trivial.
+    destruct m; try trivial; try apply_happens_before_iop.
+    destruct m; try trivial; try apply_happens_before_iop.
     trivial.
     trivial.
     trivial.
@@ -1765,7 +1800,7 @@ Module Conformance.
   Qed.
       
 
-  Lemma larger_conforms_to_smaller : forall (acts : list Action) (n : nat), acts_valid acts (S n)  /\ n > 2 -> acts_valid (project_to_size n acts) n.
+  Lemma larger_conforms_to_smaller : forall (acts : list Action) (n : nat), acts_valid acts (S n)  /\ n > 1 -> acts_valid (project_to_size n acts) n.
     Proof.
       intros.
       destruct H.
@@ -1787,7 +1822,7 @@ Module Conformance.
       split; try assumption; try lia.
       split.
       (*apply has_no_duplicate_receives_independent_of_proj.*)
-      apply has_no_duplicate_actions_independent_of_proj.
+      apply has_no_duplicate_receives_independent_of_proj.
       assumption.
       split.
       apply valid_implies_all_receives_causal_in_proj.
@@ -1886,7 +1921,7 @@ Module Conformance.
       apply IHacts.
     Qed.
 
-  Lemma projected_larger_conforms_to_smaller : forall (acts : list Action) (n : nat), acts_valid (project_to_size (S n) acts) (S n) /\ n > 2 -> acts_valid (project_to_size n acts) n.
+  Lemma projected_larger_conforms_to_smaller : forall (acts : list Action) (n : nat), acts_valid (project_to_size (S n) acts) (S n) /\ n > 1 -> acts_valid (project_to_size n acts) n.
     Proof.
       intros.
       destruct H.
@@ -1908,8 +1943,8 @@ Module Conformance.
       assumption.
       lia.
       split.
-      (*pose proof (has_no_duplicate_receives_independent_of_proj (project_to_size (S n) acts) n).*)
-      pose proof (has_no_duplicate_actions_independent_of_proj (project_to_size (S n) acts) n).
+      pose proof (has_no_duplicate_receives_independent_of_proj (project_to_size (S n) acts) n).
+      (*pose proof (has_no_duplicate_actions_independent_of_proj (project_to_size (S n) acts) n).*)
       rewrite project_idempotent in H7.
       apply H7.
       assumption.
@@ -1998,4 +2033,4 @@ Module Conformance.
       lia.
     Qed.
 
-End Conformance
+End Conformance.
