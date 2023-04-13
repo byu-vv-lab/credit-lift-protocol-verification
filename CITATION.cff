@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Storey
+    given-names: Kyle
+    orcid: https://orcid.org/1234-5678-9101-1121
+  - family-names: Mercer
+    given-names: Eric
+    orcid: https://orcid.org/0000-0002-2264-2958
+title: "Extending Model Checking using Inductive Proofs in Distributed Digital Currency Protocols"
+version: 1.0.0
+date-released: 2023-04-13
+url: "https://github.com/byu-vv-lab/credit-lift-protocol-verification"
