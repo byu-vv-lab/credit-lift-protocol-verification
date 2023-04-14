@@ -180,3 +180,121 @@ journal={MyCHIPs Digital Money at \url{http://gotchoices.org/mychips/intro.html}
 }
 
 @INPROCEEDINGS{ben_DC,  author={Ogles, Benjamin and Aldous, Peter and Mercer, Eric},  booktitle={2019 Formal Methods in Computer Aided Design (FMCAD)},   title={Proving Data Race Freedom in Task Parallel Programs Using a Weaker Partial Order},   year={2019},  volume={},  number={},  pages={55-63},  doi={10.23919/FMCAD.2019.8894270}}
+
+@software{Storey_Extending_Model_Checking_2023,author = {Storey, Kyle and Mercer, Eric},month = {4},title = {{Extending Model Checking using Inductive Proofs in Distributed Digital Currency Protocols}},url = {https://github.com/byu-vv-lab/credit-lift-protocol-verification},version = {1.0.0},year = {2023}}
+
+
+@article{reasoning_many_proc,
+author = {German, Steven M. and Sistla, A. Prasad},
+title = {Reasoning about Systems with Many Processes},
+year = {1992},
+issue_date = {July 1992},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {39},
+number = {3},
+issn = {0004-5411},
+url = {https://doi.org/10.1145/146637.146681},
+doi = {10.1145/146637.146681},
+abstract = {Methods are given for automatically verifying temporal properties of concurrent systems containing an arbitrary number of finite-state processes that communicate using CCS actions. TWo models of systems are considered. Systems in the first model consist of a unique control process and an arbitrary number of user processes with identical definitions. For this model, a decision procedure to check whether all the executions of a process satisfy a given specification is presented. This algorithm runs in time double exponential in the sizes of the control and the user process definitions. It is also proven that it is decidable whether all the fair executions of a process satisfy a given specification. The second model is a special case of the first. In this model, all the processes have identical definitions. For this model, an efficient decision procedure is presented that checks if every execution of a process satisfies a given temporal logic specification. This algorithm runs in time polynomial in the size of the process definition. It is shown how to verify certain global properties such as mutual exclusion and absence of deadlocks. Finally, it is shown how these decision procedures can be used to reason about certain systems with a communication network.},
+journal = {J. ACM},
+month = {jul},
+pages = {675–735},
+numpages = {61}
+}
+
+@inproceedings{clarke_base_ismc,
+author = {Clarke, E. M. and Grumberg, O. and Browne, M. C.},
+title = {Reasoning about Networks with Many Identical Finite-State Processes},
+year = {1986},
+isbn = {0897911989},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/10590.10611},
+doi = {10.1145/10590.10611},
+booktitle = {Proceedings of the Fifth Annual ACM Symposium on Principles of Distributed Computing},
+pages = {240–248},
+numpages = {9},
+location = {Calgary, Alberta, Canada},
+series = {PODC '86}
+}
+
+@article{component_language,
+title = {Verification of component-based systems with recursive architectures},
+journal = {Theoretical Computer Science},
+volume = {940},
+pages = {146-175},
+year = {2023},
+issn = {0304-3975},
+doi = {https://doi.org/10.1016/j.tcs.2022.10.022},
+url = {https://www.sciencedirect.com/science/article/pii/S0304397522006181},
+author = {Marius Bozga and Radu Iosif and Joseph Sifakis},
+keywords = {Resource logic, Component-based distributed systems, Parameterized verification},
+abstract = {We study a sound verification method for parametric component-based systems. The method uses a resource logic, a new formal specification language for distributed systems consisting of a finite yet unbounded number of components. The logic allows the description of architecture configurations coordinating instances of a finite number of types of components, by means of inductive definitions similar to the ones used to describe algebraic data types or recursive data structures. For parametric systems specified in this logic, we show that decision problems such as reaching deadlock or violating critical section are undecidable, in general. Despite this negative result, we provide for these decision problems practical semi-algorithms relying on the automatic synthesis of structural invariants allowing the proof of general safety properties. The invariants are defined using the WSκS fragment of the monadic second order logic, known to be decidable by a classical automata-logic connection, thus reducing a verification problem to checking satisfiability of a WSκS formula.}
+}
+@article{lowe_parameterized,
+  author       = {Gavin Lowe},
+  title        = {Parameterized verification of systems with component identities, using view abstraction},
+  journal      = {Int. J. Softw. Tools Technol. Transf.},
+  volume       = {24},
+  number       = {2},
+  pages        = {287--324},
+  year         = {2022},
+  url          = {https://doi.org/10.1007/s10009-022-00648-0},
+  doi          = {10.1007/s10009-022-00648-0},
+  timestamp    = {Fri, 13 May 2022 19:53:01 +0200},
+  biburl       = {https://dblp.org/rec/journals/sttt/Lowe22.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{view_abstraction,
+author = {Abdulla, Parosh and Haziza, Fr\'{e}d\'{e}ric and Hol\'{\i}k, Luk\'{a}\v{s}},
+title = {Parameterized Verification through View Abstraction},
+year = {2016},
+issue_date = {October   2016},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+volume = {18},
+number = {5},
+issn = {1433-2779},
+url = {https://doi.org/10.1007/s10009-015-0406-x},
+doi = {10.1007/s10009-015-0406-x},
+abstract = {We present a simple and efficient framework for automatic verification of systems with a parametric number of communicating processes. The processes may be organized in various topologies such as words, multisets, rings, or trees. Our method needs to inspect only a small number of processes in order to show correctness of the whole system. It relies on an abstraction function that views the system from the perspective of a fixed number of processes. The abstraction is used during the verification procedure in order to dynamically detect cut-off points beyond which the search of the state space need not continue. We show that the method is complete for a large class of well quasi-ordered systems including Petri nets. Our experimentation on a variety of benchmarks demonstrate that the method is highly efficient and that it works well even for classes of systems with undecidable verification problems. In particular, the method handles the fine-grained and full version of Szymanski's mutual exclusion protocol, whose correctness, to the best of our knowledge, has not been proven automatically by any other existing methods.},
+journal = {Int. J. Softw. Tools Technol. Transf.},
+month = {oct},
+pages = {495–516},
+numpages = {22},
+keywords = {Parameterized systems, Small model properties, View abstraction, Safety}
+}
+@inproceedings{message_passing_conformance,
+author = {Rajamani, Sriram K. and Rehof, Jakob},
+title = {Conformance Checking for Models of Asynchronous Message Passing Software},
+year = {2002},
+isbn = {3540439978},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+abstract = {We propose a notion of conformance between a specification S and an implementation model I extracted from a message-passing program. In our framework, S and I are CCS processes, which soundly abstract the externallyv isible communication behavior of a message-passing program. We use the extracted models to check that programs do not get stuck, waiting to receive or trying to send messages in vain.We show that our definition of stuckness and conformance capture important correctness conditions of message-passing software. Our definition of conformance was motivated byt he need for modular reasoning over models, leading to the requirement that conformance preserve substi-tutabilitywith respect to stuck-freeness: If I conforms to S, and P is any environment such that P | S is stuck-free, then it follows that P | I is stuck-free. We present a simple algorithm for checking if I conforms to S, when I and S obeycert ain restrictions.},
+booktitle = {Proceedings of the 14th International Conference on Computer Aided Verification},
+pages = {166–179},
+numpages = {14},
+series = {CAV '02}
+}
+
+
+@inproceedings{conformance_example,
+author = {Driscoll, Evan and Burton, Amanda and Reps, Thomas},
+title = {Checking Conformance of a Producer and a Consumer},
+year = {2011},
+isbn = {9781450304436},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2025113.2025132},
+doi = {10.1145/2025113.2025132},
+abstract = {This paper addresses the problem of identifying incompatibilities between two programs that operate in a producer/consumer relationship. It describes the techniques that are incorporated in a tool called PCCA (Producer-Consumer Conformance Analyzer), which attempts to (i) determine whether the consumer is prepared to accept all messages that the producer can emit, or (ii) find a counter-example: a message that the producer can emit and the consumer considers ill-formed.},
+booktitle = {Proceedings of the 19th ACM SIGSOFT Symposium and the 13th European Conference on Foundations of Software Engineering},
+pages = {113–123},
+numpages = {11},
+keywords = {language containment, visibly pushdown automata, producer-consumer compatibility},
+location = {Szeged, Hungary},
+series = {ESEC/FSE '11}
+}
