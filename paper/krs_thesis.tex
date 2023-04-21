@@ -77,7 +77,7 @@
 \newif\ifcomments
 \newif\ifkylecomments
 \kylecommentsfalse
-\commentstrue
+\commentsfalse
 \newcommand{\egm}[1]{\ifcomments\textcolor{orange}{egm: #1}\fi}
 \newcommand{\krs}[1]{\ifkylecomments\textcolor{blue}{krs: #1}\fi}
 
@@ -1099,6 +1099,8 @@ It utilized \emph{trace theory} and conformance to show the interchangeability o
 Because of this unique combination of methods, new properties of the MyCHIPs lift protocol can be verified through model checking without making adjustments to the inductive proof.
 
 The methods described in this work can be applied to other distributed algorithms to prove properties that require flexibility and powerful reasoning tools available in interactive theorem provers while taking advantage of the automated verification possible using model-checking.
+
+\pagebreak
 \appendix
 
 \section{The MyCHIPs system}
