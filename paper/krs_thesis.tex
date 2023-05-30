@@ -25,7 +25,7 @@
 \newcommand{\originatorstate}{S_O}
 \newcommand{\relayastate}{S_1}
 \newcommand{\relaybstate}{S_2}
-\newcommand{\refstate}{S_R}
+\newcommand{\refstate}{S_{Ref}}
 \newcommand{\originatorsuccbal}{\Delta^s_O}
 \newcommand{\relayasuccbal}{\Delta^s_1}
 \newcommand{\relaybsuccbal}{\Delta^s_2}
@@ -52,6 +52,7 @@
 \newcommand{\happensbefore}{\prec_T}
 \newcommand{\actsvalid}[2]{\mathds{V}(#1, #2)}
 \newcommand{\projectsize}[2]{\mathds{P}(#1, #2)}
+\newcommand{\projalpha}[2]{\mathit{Proj}(#1, #2)}
 \newcommand{\basesystem}{\emph{base\_system}}
 \newcommand{\inputset}[1]{\mathds{I}(#1)}
 \newcommand{\outputset}[2]{\mathds{O}(#1, #2)}
@@ -89,7 +90,8 @@
 
 \begin{document}
 
-\title{Extending Model Checking using Inductive Proofs in Distributed Digital Currency Protocols}
+\title{Extending Model Checking using Machine-Checked Proofs in Distributed Digital Currency Protocols}
+\titlerunning{Extending Model Checking using Machine-Checked Proofs}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -147,7 +149,7 @@ It uses a \emph{black-box} approach in the theorem prover, where only messages t
 If the set of observed messages for each entity is unchanged as the system grows larger, then the set of internal states of each entity is unchanged.
 
 When the set of messages remains unchanged we say that the larger system \emph{conforms} to the smaller system\cite{dill_trace_theory}. This implies that the safety and liveness properties verified in the model checker continue to hold as the system grows large.
-This process is demonstrated in a case study of MyCHIPs. MyCHIPs employs a distributed protocol to facilitate the trade of goods and services between trusting partners. There are many properties that must hold for MyCHIPs to meet its security and functionality requirements. This work verifies several of those properties.
+This process is demonstrated in a case study of MyCHIPs. MyCHIPs is a novel digital currency that facilitates the trade of goods and services between trusting partners.  MyCHIPs has some similarities to time banking systems \cite{timebank1} \cite{timebank2} but introduces some useful debt-clearing algorithms to help facilitate trade in a more decentralized way. There are many properties that must hold for MyCHIPs to meet its security and functionality requirements. This work verifies several of those properties.
 
 In particular, this work verifies a distributed algorithm in the MyCHIPs system called a \emph{credit lift}. A \emph{credit lift} (\emph{lift} for brevity) in the MyCHIPs protocol operates on a group of agents arranged in a cycle such that each agent is in debt to its successor in the cycle. The protocol arranges for each to forgive their predecessor's debt, and in exchange, their own debt is forgiven. This protocol is critical for the MyCHIPs system to work correctly as a digital currency. Details of how this protocol fits in the larger system can be found in the appendix \ref{apdx:mychips}.
 
@@ -168,6 +170,8 @@ The properties this work will verify are as follows:
 \item Every active pair of nodes on the final state of the lift agree on their shared tally.
 \end{enumerate}
 
+These properties must hold for all compliant nodes on the network, and must hold regardless of the number of nodes that participate in a lift, and the network topology of those nodes. We admit in our model that messages may be lost and will never be received. We also admit that messages may experience arbitrarily long delays. However, we add an exception that messages to and from a special node called the referee will eventually be received.  We assume that all participants will follow the protocol, but may do nothing indefinitely (the case where a node fails or becomes disconnected from the network). Again we add an exception that the referee will not do nothing indefinitely. We also assume that nodes only appear once in the circuit, and that nodes only participate in one lift at a time. 
+
 Using a model checker, this work proves these properties hold in a system with just one originator---the node that initiates the lift algorithm---one referee, and one relay node---a node that participates in the lift that is not the originator or a referee. This work also defines a set of rules about a trace of events based on the constraints of the protocol. These rules can be used to determine if a trace of events is allowed by the protocol for a system of a given size. 
 Then in the proof assistant \coq, we define the set of traces of events that are allowed by these rules. This is designed to enumerate the same set of traces checked by our model checker. This set of traces acts as an expression context as described by Dill \cite{dill_trace_theory} to define a conformation relation. In Dill's work, he proves if one subsystem conforms to another, it can be substituted without affecting the rest of the system's behavior. 
 Using the model checking results as a base case, we prove that the set of traces produced by a chain of $n+1$ relay nodes conforms to the set of traces produced by $n$ relay nodes and inductively argue that the properties verified by model checking hold for any number of nodes.
@@ -179,7 +183,7 @@ Using model checking to verify properties of systems with arbitrarily large or e
 \end{enumerate}
 Using this new method gives two key advantages: 
 \begin{enumerate}
-    \item Using a black-box representation in the inductive proof allows for new properties can be verified in the system through model checking without adjusting the inductive proof.
+    \item Using a black-box representation in the inductive proof allows for new properties to be verified in the system through model checking without adjusting the inductive proof.
     \item  Using a different representation for the inductive proof allows for more flexibility in proof tactics and structure.
 \end{enumerate}
 
@@ -244,7 +248,7 @@ In the figure, each box represents the state of the lift from the perspective of
 \krs{We don't talk about ignoring PEND messages, but I think it just distracts from the message. We can probably omit it. Folks might ask because it is in the Mealy Machines}
 \egm{In the section on the mealy machines, I suggest the addition of a closing paragraph that states what is different in the verification models and why such a change is inconsequential to the verification result. It is in that paragraph that I would make clear why the pending messages are not relevant.}}
 
-The \spin\ model used to verify the properties of the protocol is close to a direct implementation of the mealy machines in \figref{fig:liftStates} with one key difference: the edge in the Referee from \nolift\ to \nolift\ is removed in the implementation. Because no state is changed when a Referee sends a \pend\ response to a \status\ request omitting this behavior does not make a meaningful change to the states explored by the model checker. To verify that this change doesn't change the behavior we implemented the mealy machines directly for comparison and verified that the desired properties hold on both models. The implementation of both models can be found in the \coderepository. Using the minimal model as the base case simplifies the inductive proof. 
+The \spin\ model used to verify the properties of the protocol is close to a direct implementation of the mealy machines in \figref{fig:liftStates} with one key difference: the edge in the Referee from \nolift\ to \nolift\ is removed in the implementation. Because no state is changed when a Referee sends a \pend\ response to a \status\ request this is equivalent to a delay. Time is not directly modeled in the model checker. Instead, any decision that a node would make based on time is modeled as a non-deterministic choice. Because time is not directly modeled delays in the system will not affect the explored behavior of the system. Because of this, omitting the \pend\ edge on the referee does not make a meaningful change to the states explored by the model checker. To be certain that this change doesn't change the behavior we implemented the mealy machines directly for comparison and verified that the desired properties hold on both models. The implementation of both models can be found in the \coderepository. Using the minimal model as the base case simplifies the inductive proof. 
 The details of that implementation are described in \secref{chap:model_checking_results}. The set of rules for the proof in \coq\ are defined based on the mealy machine in \figref{fig:liftStates} and the sequence diagram in 
  \figref{fig:liftSequence}. Details of that implementation are described in \secref{chap:coq_results}.
  
@@ -301,8 +305,8 @@ In particular, we would like to show that---in the context of a system of any si
 
 Dill describes a relation called Conformance that is used to determine when one module is a safe substitution for another \cite{dill_trace_theory}.
 In Dill's work, he defines a sufficient condition for one module to conform to another:
-$$F(R') \subseteq F(R) \wedge\ P(R) \subseteq P(R') \longrightarrow R' \preceq R$$
-Where $F(R)$ is the set of traces that cause an internal failure in $R$, and $P(R)$ is the set of possible traces in $R$. 
+$$\projalpha{F(R)}{R'} \subseteq F(R') \wedge\ \projalpha{P(R)}{R'} \subseteq P(R') \longrightarrow R \preceq R'$$
+Where $F(R)$ is the set of traces that cause an internal failure in $R$, $P(R)$ is the set of possible traces in $R$ and $\projalpha{T}{R'}$ \emph{projects} the set of traces $T$ to omit events that are not in the alphabet of $R'$.
 The assumption is that if $R'$ experiences an internal failure the system as a whole will experience a failure. However, the goal of our analysis is to prove the properties of the system as a whole hold even when individual nodes in the system may fail. Because of this, there is no behavior of individual nodes that we will consider a failure. All of the behavior of each node, including the behavior of a node that experiences an internal error is considered in the possible behavior and not considered a failure. Written precisely:
 $$
 \forall R, F(R) = \varnothing
@@ -311,15 +315,15 @@ This allows us to reduce the necessary condition for conformance to:
 
 \begin{definition}[Conformance]
 \label{def:conformance}
-$$P(R) \subseteq P(R') \longrightarrow R \preceq R'$$
-Where $P(R)$ and $P(R')$ are the sets of possible traces in $R$ and $R'$ respectively. 
+$$\projalpha{P(R)}{R'} \subseteq P(R') \longrightarrow R \preceq R'$$
+Where $P(R)$ and $P(R')$ are the sets of possible traces in $R$ and $R'$ respectively, and $\projalpha{T}{R'}$ \emph{projects} the set of traces $T$ to omit events that are not in the aphabet of $R'$.
 \end{definition}
 
 Dill's work allows us to admit the following theorem: 
 \begin{theorem}[Conformance implies safe-substitution]
 \label{theorem:dill}
- In the context of any system, if the component $R'$ conforms to the component $R$, then $R$ can be replaced by $R'$ and all properties of the system are preserved.
-$$R' \preceq R \longrightarrow Prop(\dotsm, R, \dotsm) \longrightarrow Prop(\dotsm, R', \dotsm)
+ In the context of any system, if the component $R$ conforms to the component $R'$, then $R'$ can be replaced by $R$ and all properties of the system are preserved.
+$$R \preceq R' \longrightarrow Prop(\dotsm, R', \dotsm) \longrightarrow Prop(\dotsm, R, \dotsm)
 $$
 \end{theorem}
 
@@ -502,7 +506,7 @@ The purpose of $P_2$ is to verify that if any node believes the lift has complet
 
 \begin{definition}[Property 3]
 \begin{multline*}
-P_3 \equiv \always\ \eventually,\ \fair \longrightarrow \\
+P_3 \equiv \always\ \eventually,\ \\
     (\originatorsuccbal + \originatorpredbal \ge 0) \wedge
     (\relayasuccbal + \relayapredbal \ge 0)\\
 \end{multline*}
@@ -513,7 +517,7 @@ The purpose of $P_3$ is to verify that the balance of every active node on the f
 
 \begin{definition}[Property 4]
 \begin{multline*}
-P_4 \equiv \always\ \eventually,\ \fair \longrightarrow \\
+P_4 \equiv \always\ \eventually,\ \\
     (\originatorsuccbal = -\relayapredbal) \wedge
     (\relayasuccbal = -\originatorpredbal) \\
 \end{multline*}
@@ -527,7 +531,7 @@ The purpose of $P_4$ is to ensure that nodes are always in agreement with their 
 \subsection{Results}
 
 To verify each of these properties, \spin\ evaluated 
-11478 unique states with 73805 edges between those states. Evaluating each property \spin\ found that there were no counterexamples. 
+15625 unique states with 172726 edges between those states. Evaluating each property \spin\ found that there were no counterexamples. The analysis took 10.358 seconds on a Intel Xeon running at 2.60 GHz.
 
 From these results, we can conclude that the properties hold for a system with one originator, one relay node, and one referee, for all possible orderings and types of messages sent and for all combinations of messages failing to be delivered. This verifies Lemma \ref{lemma:base_system} as described in \secref{sec:extending}.
 
@@ -540,7 +544,7 @@ $$\forall n \in \mathds{N}, (B_n, B_{n+1}) \preceq (B_n)
 $$
 
 By Definition \ref{def:conformance} this is can be reduced to:
-$$P(B_n, B_{n+1}) \subseteq P(B_n) \longrightarrow (B_n, B_{n+1}) \preceq B_n$$
+$$\projalpha{P(B_n, B_{n+1})}{B_n} \subseteq P(B_n) \longrightarrow (B_n, B_{n+1}) \preceq B_n$$
 
 The validity rules define the black-box model behavior by specifying all the possible traces of the model. A trace is a possible behavior of the model if and only if the trace meets all the validity rules:
 \begin{equation}
@@ -558,17 +562,21 @@ Where $\projectsize{T}{n}$ is a projection function that removes events from the
 \begin{proof}\ \\
 Introduce: 
 \begin{equation}
-\label{eq:valid}
 \forall T \in P(B_n, B_{n+1}), \actsvalid{\projectsize{T}{n}}{n}
+\end{equation}
+This is equivalent to:
+\begin{equation}
+\label{eq:valid}
+\forall T \in \projalpha{P(B_n, B_{n+1})}{B_n}, \actsvalid{T}{n}
 \end{equation}
 Assert:
 \begin{equation}
-P(B_n, B_{n+1}) \subseteq P(B_n)
+\projalpha{P(B_n, B_{n+1})}{B_n} \subseteq P(B_n)
 \end{equation}
 This is equivalent to:
 \begin{equation}
 \label{eq:subseteq}
-P(B_n, B_{n+1}) \subseteq P(B_n) \equiv \forall T, T \in P(B_n, B_{n+1}) \longrightarrow T \in P(B_n)
+\projalpha{P(B_n, B_{n+1})}{B_n} \subseteq P(B_n) \equiv \forall T, T \in \projalpha{P(B_n, B_{n+1})}{B_n} \longrightarrow T \in P(B_n)
 \end{equation}
 Apply (\ref{eq:valid_implies}) and (\ref{eq:valid}):
 \begin{equation}
@@ -577,7 +585,7 @@ Apply (\ref{eq:valid_implies}) and (\ref{eq:valid}):
 Apply (\ref{eq:subseteq}):
 \begin{equation}
     \label{eq:goal2}
-    P(B_n, B_{n+1}) \subseteq P(B_n)
+    \projalpha{P(B_n, B_{n+1})}{B_n} \subseteq P(B_n)
 \end{equation}
 By Definition \ref{def:conformance}:
 \begin{equation}
@@ -683,7 +691,7 @@ Given $a = (\send, s, d, m), a \in T \wedge s \neq 0 \longrightarrow \exists r, 
 \begin{definition}[all\_ids\_in\_range] Ensures the trace only includes identifiers for nodes that are in a system of the given size. Destinations of a send are allowed to \emph{wrap} by one identifier. Given $a \in \action, a = (\send, s, d, m) \longrightarrow 0 \le s < S \wedge -1 \le d \le S$
 \end{definition}
 
-\begin{definition}[promise\_forward\_commit\_backward] All \promise\ messages are sent to the successor in the cycle and all \receive\ messages are sent to the predecessor. Given $a = (\send, s, d, m), a \in T \longrightarrow [(m = \promise\ \longrightarrow d = s + 1) \wedge (m = \commit\ \longrightarrow s = d + 1)]$
+\begin{definition}[promise\_forward\_commit\_backward] All \promise\ messages are sent to the successor in the cycle and all \commit\ messages are sent to the predecessor. Given $a = (\send, s, d, m), a \in T \longrightarrow [(m = \promise\ \longrightarrow d = s + 1) \wedge (m = \commit\ \longrightarrow s = d + 1)]$
 \end{definition}
 \begin{definition}[phase\_sequence\_correct] The originator sends the first \commit\ message, and the originator is the last to receive each type of message. Given $a, b \in T$,
 $$ 
@@ -906,12 +914,12 @@ $$
 This is the core lemma showing that projection doesn't reorder actions in the trace. It is proven by induction on the trace of actions. 
 
 The base case, an empty trace, is easily dismissed with a proof by contradiction. 
-Then when we consider a trace of actions with one additional action prepended to the trace. We call this new action $x$. On this new trace, we know that the action $a$ happens before the action $y$.
+Then we consider a trace of actions with one additional action prepended to the trace. We call this new action $x$. On this new trace, we know that the action $a$ happens before the action $y$.
 We can examine what might happen to $x$ in the projected trace.
 We know that an action either remains in the projected trace or is removed entirely from the projected trace.
 We will consider both of these cases.
 
-If $x$ remains in the trace then it becomes the first item in the trace. 
+If $x$ remains in the projected trace then it becomes the first item in the projected trace. 
 We then consider the possible cases for what $x$ is.
 $x$ could be equal to $a$, it could be equal to $b$, or it could be neither $a$ nor $b$.
 If it is equal to $a$ then because it is the first item in the trace it must happen before $b$.
@@ -921,8 +929,10 @@ If $x$ is neither $a$ nor $b$ then it does not have any bearing on whether $a$ h
 Finally, we must consider the case where $x$ is removed from the trace in the projection. This immediately reduces to the inductive hypothesis which allows us to prove that the \emph{happens\_before} property is independent of projection.
 
 \subsection{Results}
-Theorem \ref{thm:maintheorem} tells us that the set of possible traces of actions taken by each node in a system is independent of the size of the system. Because this is true for a chain of n nodes we know that the possible traces of events in a chain of n nodes is equivalent to possible traces of events in a single node. With this and Theorem \ref{thm:valid_imp_conf} we know that a chain of n relay nodes conforms to a single node.
-Thus we see that Lemma \ref{lemma:chain_conform} must be true:
+Theorem \ref{thm:maintheorem} tells us that the set of possible traces of actions taken by each node in a system is independent of the size of the system. Because this is true for a chain of n nodes we know that the possible traces of events in a chain of n nodes is equivalent to possible traces of events in a single node. With this and Theorem \ref{thm:valid_imp_conf} we know that a chain of n relay nodes conforms to a single node. 
+
+Each of the proofs for the lemmas and theorems described in \figref{fig:coqLemmaStack} were certified correct by Coq. The proof script spans 1960 lines of code and took 7.926 seconds to verify running on an Intel Xeon CPU running at 2.60 GHz.
+These results prove that Lemma \ref{lemma:chain_conform} is true:
 $$\forall n \in \mathds{N}, (B_n, B_{n+1}) \preceq (B_n)
 $$
 
@@ -934,15 +944,18 @@ $$B \preceq R\
 \wedge\ 
 R \preceq B$$
 
-By the Definition \ref{def:conformance} it is sufficient to prove:
+By Definition \ref{def:conformance} it is sufficient to prove:
+$$\projalpha{P(B)}{R} \subseteq P(R) \wedge \projalpha{P(R)}{B} \subseteq P(B)$$
+
+However, by design, the alphabet of events for the \emph{black-box} model $B$ is equal to the alphabet of events for the relay node definition $R$. So this is equivalent to:
 $$P(B) \subseteq P(R) \wedge P(R) \subseteq P(B)$$
 
 We will consider the left side and the right side of the conjunction separately. 
 Sections \ref{sec:inputs_smaller} and \ref{sec:outputs_bigger} describe how the \spin\ model was adjusted to verify the left and right sides respectively.
 
-\subsection{The inductive proof's accepted inputs are a superset of the model-checking accepted inputs}
+\subsection{Possible traces of the definition are a subset of the validity rules}
 \label{sec:inputs_smaller}
-If $P(B) \nsubseteq P(R)$ then there must exist a trace explored by \spin\ that breaks the validity rules. By encoding the validity rules as properties in \spin, we can then verify that the rules hold for all of the traces evaluated by \spin. 
+If $P(R) \nsubseteq P(B)$ then there must exist a trace explored by \spin\ that breaks the validity rules. By encoding the validity rules as properties in \spin, we can then verify that the rules hold for all of the traces evaluated by \spin. 
 
 To implement the properties the \spin\ model needed to be extended to generate a data structure that recorded the trace of actions. To simplify this structure we rely on the fact that messages received by nodes are \emph{idempotent}. If a node receives a message more than once the state will be the same as if it received the message only once. Because of this we can use Boolean flags for each type of message at a given node, and make assertions about these Booleans to verify the validity rules. The \spin\ model was adjusted to set these flags when a message was sent and when a message was received. 
 After making these adjustments the validity rules can be written in \spin\ as properties, then \spin\ will evaluate each trace of events to ensure that the properties hold. 
@@ -960,10 +973,10 @@ When adding a fairness property it is prudent to check that the fairness propert
 $$always\ !size\_fair$$
 We expect this property to fail which indicates that the fairness constraint does not make our properties vacuously true. 
 
-The implementation of these properties can be found in the \coderepository. After implementing the rules as properties \spin\ evaluated these properties and found no counterexamples. These results verify that 
+The implementation of these properties can be found in the \coderepository. After implementing the rules as properties \spin\ evaluated these properties in 11478 unique states with 73805 edges between those states and found no counterexamples. The analysis took 23.490 seconds running on an Intel(R) Xeon(R) CPU running at 2.60 GHz. These results verify that 
 $P(R) \subseteq P(B)$.
 
-\subsection{The inductive proof's outputs are equivalent to the model-checking outputs}
+\subsection{Possible traces of the validity rules are a subset of the definition}
 \label{sec:outputs_bigger}
 We would like to show:
 $$P(B) \subseteq P(R)$$
@@ -1000,7 +1013,7 @@ We can evaluate if each of these equivalence classes is considered in the \spin\
 
 The properties used to generate a witness trace for each equivalence class are defined as an automaton that accepts a trace only if it is in the desired equivalence class. The implementation of these automata can be found in the \coderepository.
 \krs{Good point. Rewritten to omit. I just can't seem to help writing Spin tutorials ;)\egm{Why talk about never claims? In the previous sub-section, we just said check the properties.}}
-After executing the model checker to search for each of these new properties, each equivalence class was observed in the \spin\ model. This allows us to conclude that:
+After executing the model checker to search for each of these new properties, each equivalence class was observed in the \spin\ model. Spin evaluated relatively few system states before finding each witness trace. The fastest search only evaluated 36 states and the longest evaluated 8308 states. The entire analysis took 28.352 seconds running on an Intel Xeon CPU running 2.60 GHz. This allows us to conclude that:
 
 
 $$P(B) \subseteq P(R)$$
@@ -1069,7 +1082,7 @@ German and Sistla's work is often referenced when describing methods for model-c
 \subsection{Digital Currency Background and Verification}
 There are also several papers relating to digital currencies which may be helpful background when considering the MyCHIPs system described in Appendix \ref{apdx:mychips}.
 
- Nakamoto describes how transferable digital tokens can be double-spent. The paper introduces bitcoins and describes the proof of work method of overcoming this problem which is often referred to as blockchain technology \cite{bitcoin}.
+ Nakamoto describes how transferable digital tokens can be double-spent. The paper introduces the \emph{bitcoin} system and describes the proof-of-work method of overcoming this problem. This proof-of-work method is the foundation of blockchain technology \cite{bitcoin}.
 
  Bateman recognizes that the double spending problem is present only in digital currencies that are both duplicatable and transferable. Blockchain technology prevents digital tokens from being duplicated. MyCHIPs instead is designed with non-transferable tokens. MyCHIPs utilizes credit lifts to allow these non-transferable tokens to be virtually fungible and to allow for effective transactions to be made. 
  
@@ -1087,7 +1100,7 @@ There are also several papers relating to digital currencies which may be helpfu
  Konnov, Veith, and Widder explore the unsolved problems associated with model-checking distributed algorithms. This can serve as a hazard map of difficult unsolved problems \cite{Konnov}.
 
 \subsection{Work that uses similar methods for machine-checked proofs}
- Huang, Ogles, and Mercer prove that \emph{doesn't commute}, a weakened version of the happens-before relation, is sound for certain common classes of task parallel programs. They present a machine-checked proof that proves properties for all traces constrained by a partial order. The methods demonstrated by Huang, Ogles, and Mercer were used as inspiration for some of this work's machine-checked proofs \cite{ben_DC}.
+ Ogles, Aldous and Mercer prove that \emph{doesn't commute}, a weakened version of the happens-before relation, is sound for certain common classes of task parallel programs. They present a machine-checked proof that proves properties for all traces constrained by a partial order. The methods demonstrated by Ogles, Aldous and Mercer were used as inspiration for some of this work's machine-checked proofs \cite{ben_DC}.
  
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1209,7 +1222,7 @@ For example, Bob needs his car fixed, John wants solar panels installed on his r
 But it is difficult to identify these cycles before every transaction. This is where money comes in. Using government-backed money like dollars or euros, the process for enabling this transaction might go as follows:
 \begin{enumerate}
 \item Bob gets a loan from a bank
-\item Bob uses the money from the loan to pay Cindy to fix his car.
+\item Bob uses the money from the loan to pay Cindy to fix his car
 \item Cindy gives that money to John to dig the well
 \item John gives Bob the money to install the solar panels
 \item Bob uses the money to repay his loan (but he may need to pay a little 
